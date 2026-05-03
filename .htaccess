@@ -1,0 +1,19 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Preserve Authorization header for Laravel auth APIs.
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Allow certificate challenge files to pass through untouched.
+    RewriteCond %{REQUEST_URI} ^/\.well-known/ [OR]
+    RewriteCond %{REQUEST_URI} ^/public/
+    RewriteRule ^ - [L]
+
+    # Route homepage explicitly to Laravel public directory.
+    RewriteRule ^$ public/ [L]
+
+    # Route all non-existing files to public.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
