@@ -189,7 +189,7 @@ document.getElementById('razorpay-button').onclick = function(e) {
             document.getElementById('payment-form').submit();
         },
         "prefill": { "name": "AddMagPro", "email": "addmagpro@gmail.com", "contact": "7702381784" },
-        "theme": { "color": "#ff9900" }
+        "theme": { "color": "#aa5500" }
     };
     new Razorpay(options).open();
 };

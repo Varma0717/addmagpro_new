@@ -96,7 +96,7 @@
             Don't have an account? <a href="{{ route('service_user_registration') }}" style="color:var(--theme-color);font-weight:600;">Register</a>
         </p>
         <p class="text-center" style="font-size:.875rem;">
-            <a href="{{ route('welcome_page') }}" style="color:#888;">← Back to Home</a>
+            <a href="{{ route('welcome_page') }}" style="color:#595959;">← Back to Home</a>
         </p>
     </div>
     <script src="{{ asset('assets/kartify/js/bootstrap/bootstrap.bundle.js') }}"></script>

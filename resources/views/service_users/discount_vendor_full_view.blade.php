@@ -18,7 +18,7 @@
                 @if($vendor_detail->banner_image ?? '')
                 <img src="{{ asset($vendor_detail->banner_image) }}" alt="{{ $vendor_detail->shop_name }}" class="img-fluid rounded" style="max-height:360px;width:100%;object-fit:cover;">
                 @else
-                <div class="rounded d-flex align-items-center justify-content-center" style="height:300px;background:linear-gradient(135deg,var(--theme-color),#ff6600);">
+                <div class="rounded d-flex align-items-center justify-content-center" style="height:300px;background:linear-gradient(135deg,var(--theme-color),#7a2800);">
                     <i class="ri-store-line" style="font-size:5rem;color:#fff;"></i>
                 </div>
                 @endif

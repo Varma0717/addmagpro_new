@@ -83,13 +83,13 @@
             {{-- LEFT SIDEBAR --}}
             <div class="col-lg-3 col-xl-2">
                 <div class="dash-card p-0 overflow-hidden">
-                    <div class="p-3 text-center" style="background:linear-gradient(135deg,var(--theme-color) 0%,#ff6600 100%);">
+                    <div class="p-3 text-center" style="background:linear-gradient(135deg,var(--theme-color) 0%,#7a2800 100%);">
                         <div class="rounded-circle mx-auto mb-2 overflow-hidden" style="width:64px;height:64px;background:rgba(255,255,255,.2);">
                             <i class="ri-user-line" style="font-size:2.5rem;color:#fff;line-height:64px;"></i>
                         </div>
                         @isset($user_details)
                         <h6 class="text-white fw-bold mb-0">{{ $user_details[0]->member_name ?? 'Member' }}</h6>
-                        <small class="text-white opacity-75">ID: {{ $user_details[0]->service_id ?? '' }}</small>
+                        <small class="text-white">ID: {{ $user_details[0]->service_id ?? '' }}</small>
                         @endisset
                     </div>
                     <div class="p-2">
@@ -137,7 +137,7 @@
                     @php
                     $gross = $user_details[0]->cumulative_gross ?? 0;
                     if ($gross >= 120001) { $level = 'Diamond'; $levelColor = '#1565c0'; }
-                    elseif ($gross >= 40001) { $level = 'Gold'; $levelColor = '#e65100'; }
+                    elseif ($gross >= 40001) { $level = 'Gold'; $levelColor = '#7b2d00'; }
                     elseif ($gross >= 20001) { $level = 'Silver'; $levelColor = '#4a4a4a'; }
                     elseif ($gross >= 8000) { $level = 'Bronze'; $levelColor = '#6d4c41'; }
                     else { $level = 'Starter'; $levelColor = '#2e7d32'; }
@@ -150,7 +150,7 @@
 
                 {{-- Stats Row --}}
                 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:1.25rem;">
-                    <div class="dash-stat" style="background:linear-gradient(135deg,#ff9900,#ff6600);">
+                    <div class="dash-stat" style="background:linear-gradient(135deg,#aa5500,#7a2800);">
                         <div class="stat-icon"><i class="ri-wallet-line"></i></div>
                         <div>
                             <h3>&#8377;{{ number_format($cummulative_value ?? 0, 0) }}</h3>

@@ -22,7 +22,7 @@
                     @if($user->business_image ?? '')
                     <img src="{{ asset($user->business_image) }}" alt="{{ $user->member_name }}" style="width:100%;height:180px;object-fit:cover;">
                     @else
-                    <div style="width:100%;height:180px;background:linear-gradient(135deg,var(--theme-color),#ff6600);display:flex;align-items:center;justify-content:center;">
+                    <div style="width:100%;height:180px;background:linear-gradient(135deg,var(--theme-color),#7a2800);display:flex;align-items:center;justify-content:center;">
                         <i class="ri-user-line" style="font-size:3rem;color:#fff;"></i>
                     </div>
                     @endif

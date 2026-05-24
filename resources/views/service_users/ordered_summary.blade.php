@@ -8,7 +8,7 @@
 .price-row { display:flex; justify-content:space-between; padding:.5rem 0; }
 .price-row:not(:last-child) { border-bottom:1px solid #f0f0f0; }
 .pay-btn { background:var(--theme-color); color:#fff; width:100%; padding:1rem; border:none; border-radius:8px; font-weight:700; font-size:1.1rem; cursor:pointer; }
-.pay-btn:hover { background:#e68a00; }
+.pay-btn:hover { background:#7a2800; }
 </style>
 @endsection
 
@@ -131,7 +131,7 @@ document.getElementById('razorpay-button').onclick = function(e) {
             "email": "addmagpro@gmail.com",
             "contact": "7702381784"
         },
-        "theme": { "color": "#ff9900" }
+        "theme": { "color": "#aa5500" }
     };
     var rzp = new Razorpay(options);
     rzp.open();

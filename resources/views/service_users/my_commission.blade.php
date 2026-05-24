@@ -6,24 +6,24 @@
         <h4 class="fw-bold mb-4">My Commission</h4>
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="p-4 rounded text-center text-white" style="background:linear-gradient(135deg,var(--theme-color),#ff6600);border-radius:12px;">
+                <div class="p-4 rounded text-center text-white" style="background:linear-gradient(135deg,var(--theme-color),#7a2800);border-radius:12px;">
                     <i class="ri-money-dollar-circle-line" style="font-size:2.5rem;"></i>
                     <h3 class="fw-bold mt-2">&#8377;{{ number_format($user_commission->total_balance ?? 0, 2) }}</h3>
-                    <p class="mb-0 opacity-85">Commission Balance</p>
+                    <p class="mb-0">Commission Balance</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="p-4 rounded text-center text-white" style="background:linear-gradient(135deg,#1976d2,#0d47a1);border-radius:12px;">
                     <i class="ri-shopping-bag-line" style="font-size:2.5rem;"></i>
                     <h3 class="fw-bold mt-2">&#8377;{{ number_format($user_commission->purchase_income ?? 0, 2) }}</h3>
-                    <p class="mb-0 opacity-85">Purchase Income</p>
+                    <p class="mb-0">Purchase Income</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="p-4 rounded text-center text-white" style="background:linear-gradient(135deg,#388e3c,#1b5e20);border-radius:12px;">
                     <i class="ri-group-line" style="font-size:2.5rem;"></i>
                     <h3 class="fw-bold mt-2">&#8377;{{ number_format($pool_comission_amount->pool_balance ?? 0, 2) }}</h3>
-                    <p class="mb-0 opacity-85">Pool Commission</p>
+                    <p class="mb-0">Pool Commission</p>
                 </div>
             </div>
             @if($product_comission_amount ?? null)
@@ -31,7 +31,7 @@
                 <div class="p-4 rounded text-center text-white" style="background:linear-gradient(135deg,#7b1fa2,#4a148c);border-radius:12px;">
                     <i class="ri-store-line" style="font-size:2.5rem;"></i>
                     <h3 class="fw-bold mt-2">&#8377;{{ number_format($product_comission_amount->balance ?? 0, 2) }}</h3>
-                    <p class="mb-0 opacity-85">Product Commission</p>
+                    <p class="mb-0">Product Commission</p>
                 </div>
             </div>
             @endif

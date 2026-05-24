@@ -9,7 +9,7 @@
                     @if(($user_info[0]->user_profile_pic ?? '') != '')
                     <img src="{{ asset($user_info[0]->user_profile_pic) }}" alt="Profile" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--theme-color);">
                     @else
-                    <div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--theme-color),#ff6600);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+                    <div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,var(--theme-color),#7a2800);display:flex;align-items:center;justify-content:center;margin:0 auto;">
                         <i class="ri-user-line" style="font-size:3rem;color:#fff;"></i>
                     </div>
                     @endif

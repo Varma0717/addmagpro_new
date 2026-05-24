@@ -34,7 +34,7 @@
         font-size: 2rem;
         font-weight: 700;
         margin: 0;
-        color: #ff9900;
+        color: #aa5500;
     }
 
     .stats-strip .stat-item p {
@@ -588,7 +588,7 @@
 {{-- ====== 16. JOIN CTA ====== --}}
 <section class="section-b-space section-t-space">
     <div class="custom-container">
-        <div class="text-center py-4 px-3 rounded" style="background:linear-gradient(135deg,#ff9900 0%,#ff6600 100%);">
+        <div class="text-center py-4 px-3 rounded" style="background:linear-gradient(135deg,#aa5500 0%,#7a2800 100%);">
 
             <h2 class="fw-bold mb-2" style="color:#fff!important;">Join AddMagPro Today</h2>
             <p class="mb-3" style="color:rgba(255,255,255,0.9)!important;">Earn while you shop, refer friends, and grow your income!</p>

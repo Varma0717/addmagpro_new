@@ -2,7 +2,7 @@
 @section('page_title', 'Home | AddMagPro')
 @section('mainsection')
 <!-- Hero Banner -->
-<section style="background:linear-gradient(135deg,#1a1a2e 60%,#ff9900 100%);padding:4rem 0;color:#fff;">
+<section style="background:linear-gradient(135deg,#1a1a2e 60%,#aa5500 100%);padding:4rem 0;color:#fff;">
     <div class="custom-container">
         <div class="row align-items-center g-4">
             <div class="col-lg-6">

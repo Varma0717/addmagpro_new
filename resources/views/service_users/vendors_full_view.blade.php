@@ -22,7 +22,7 @@
                         @if($vendor->vendor_banner_image ?? '')
                         <img src="{{ asset($vendor->vendor_banner_image) }}" alt="{{ $vendor->shop_name ?? 'Vendor' }}" style="width:100%;height:200px;object-fit:cover;">
                         @else
-                        <div style="width:100%;height:200px;background:linear-gradient(135deg,var(--theme-color),#ff6600);display:flex;align-items:center;justify-content:center;">
+                        <div style="width:100%;height:200px;background:linear-gradient(135deg,var(--theme-color),#7a2800);display:flex;align-items:center;justify-content:center;">
                             <i class="ri-store-2-line" style="font-size:3rem;color:#fff;"></i>
                         </div>
                         @endif

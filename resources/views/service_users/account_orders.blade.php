@@ -13,8 +13,8 @@
                 </div>
                 <div class="text-end">
                     @php
-                        $statusColors = ['Packing'=>'#ff9900','Shipping'=>'#1976d2','Delivered'=>'#388e3c'];
-                        $sc = $statusColors[$order->status] ?? '#999';
+                    $statusColors = ['Packing'=>'#aa5500','Shipping'=>'#1565c0','Delivered'=>'#1b5e20'];
+                    $sc = $statusColors[$order->status] ?? '#4a4a4a';
                     @endphp
                     <span class="badge" style="background:{{ $sc }};color:#fff;padding:.4rem .9rem;border-radius:20px;">
                         {{ $order->status }}

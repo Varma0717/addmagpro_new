@@ -5,7 +5,7 @@
 <style>
 .auth-section { min-height: calc(100vh - 200px); display:flex; align-items:center; padding: 3rem 0; }
 .auth-card { background:#fff; border-radius:16px; box-shadow:0 4px 30px rgba(0,0,0,.1); overflow:hidden; }
-.auth-left { background: linear-gradient(135deg, var(--theme-color) 0%, #ff6600 100%); color:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:3rem 2rem; text-align:center; }
+.auth-left { background: linear-gradient(135deg, var(--theme-color) 0%, #7a2800 100%); color:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:3rem 2rem; text-align:center; }
 .auth-left img { max-width:160px; filter:brightness(0) invert(1); }
 .auth-left h3 { font-size:1.6rem; font-weight:700; margin-top:1.5rem; }
 .auth-left p { opacity:.85; font-size:.95rem; }
@@ -14,7 +14,7 @@
 .auth-right p { color:var(--content-color); margin-bottom:2rem; }
 .form-control:focus { border-color:var(--theme-color); box-shadow:0 0 0 .2rem rgba(255,153,0,.2); }
 .btn-auth { background:var(--theme-color); color:#fff; width:100%; padding:.75rem; border-radius:8px; font-weight:600; border:none; font-size:1rem; }
-.btn-auth:hover { background:#e68a00; color:#fff; }
+.btn-auth:hover { background:#7a2800; color:#fff; }
 .referral-badge { background:rgba(255,153,0,.1); border:1px solid var(--theme-color); border-radius:8px; padding:.6rem 1rem; color:var(--theme-color); font-weight:600; margin-bottom:1.5rem; display:inline-flex; align-items:center; gap:.5rem; }
 </style>
 @endsection

@@ -19,7 +19,7 @@
                 @if($user->business_image ?? '')
                 <img src="{{ asset($user->business_image) }}" alt="{{ $user->member_name }}" class="img-fluid rounded" style="width:100%;max-height:320px;object-fit:cover;">
                 @else
-                <div class="rounded d-flex align-items-center justify-content-center" style="height:280px;background:linear-gradient(135deg,var(--theme-color),#ff6600);">
+                <div class="rounded d-flex align-items-center justify-content-center" style="height:280px;background:linear-gradient(135deg,var(--theme-color),#7a2800);">
                     <i class="ri-user-line" style="font-size:5rem;color:#fff;"></i>
                 </div>
                 @endif

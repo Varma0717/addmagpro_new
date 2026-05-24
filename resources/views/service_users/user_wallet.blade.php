@@ -5,8 +5,8 @@
     <div class="custom-container">
         <h4 class="fw-bold mb-4">My Wallet</h4>
         @php $total = ($user_back_two_back_amount ?? 0) + ($user_commission_amount ?? 0) + ($user_pool_commission_amount ?? 0); @endphp
-        <div class="p-4 mb-4 text-white text-center rounded" style="background:linear-gradient(135deg,var(--theme-color),#ff6600);">
-            <p class="mb-0 opacity-85">Total Wallet Balance</p>
+        <div class="p-4 mb-4 text-white text-center rounded" style="background:linear-gradient(135deg,var(--theme-color),#7a2800);">
+            <p class="mb-0">Total Wallet Balance</p>
             <h1 class="fw-bold my-2">&#8377;{{ number_format($total, 2) }}</h1>
             <a href="{{ route('withdraw_amount') }}" class="btn mt-2" style="background:#fff;color:var(--theme-color);font-weight:700;">
                 Withdraw Now

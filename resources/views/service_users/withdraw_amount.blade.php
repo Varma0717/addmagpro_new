@@ -6,8 +6,8 @@
         <div class="row justify-content-center">
             <div class="col-lg-7">
                 <h4 class="fw-bold mb-4">Withdraw Amount</h4>
-                <div class="p-4 rounded mb-4 text-center text-white" style="background:linear-gradient(135deg,var(--theme-color),#ff6600);">
-                    <p class="mb-0 opacity-85">Available Balance</p>
+                <div class="p-4 rounded mb-4 text-center text-white" style="background:linear-gradient(135deg,var(--theme-color),#7a2800);">
+                    <p class="mb-0">Available Balance</p>
                     <h2 class="fw-bold my-2">&#8377;{{ number_format($withdraw_amount ?? 0, 2) }}</h2>
                 </div>
                 <div class="p-4 rounded" style="background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.07);">

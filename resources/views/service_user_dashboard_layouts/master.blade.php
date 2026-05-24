@@ -26,6 +26,8 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/kartify/css/style.css') }}">
     <style>
         :root {
+            --primary-color: 170, 85, 0;
+            /* #aa5500 — 5.24:1 contrast with white (WCAG AA) */
             --theme-color: rgb(var(--primary-color));
             --theme-color-soft: rgba(var(--primary-color), 0.12);
         }
