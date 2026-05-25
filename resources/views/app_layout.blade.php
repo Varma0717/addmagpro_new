@@ -41,51 +41,9 @@
 
                 <!-- Right Side Navigation -->
                 <nav class="flex items-center space-x-4 md:space-x-6">
-                    @auth
-                    <!-- Wishlist -->
-                    <a href="/wishlist" class="relative group">
-                        <i class="fas fa-heart text-gray-600 hover:text-red-500 text-lg"></i>
-                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" id="wishlist-count">0</span>
-                    </a>
-
-                    <!-- Cart -->
-                    <a href="/cart" class="relative group">
-                        <i class="fas fa-shopping-cart text-gray-600 hover:text-blue-500 text-lg"></i>
-                        <span class="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" id="cart-count">0</span>
-                    </a>
-
-                    <!-- User Menu -->
-                    <div class="relative group">
-                        <button class="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
-                            <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="Avatar" class="w-8 h-8 rounded-full">
-                            <i class="fas fa-chevron-down text-xs hidden md:inline"></i>
-                        </button>
-
-                        <div class="absolute right-0 w-48 bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto mt-1">
-                            <a href="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
-                                <i class="fas fa-user mr-2 w-4"></i>My Profile
-                            </a>
-                            <a href="/orders" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
-                                <i class="fas fa-box mr-2 w-4"></i>My Orders
-                            </a>
-                            <a href="/wallet" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
-                                <i class="fas fa-wallet mr-2 w-4"></i>My Wallet
-                            </a>
-                            <a href="/referral" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
-                                <i class="fas fa-link mr-2 w-4"></i>Referrals
-                            </a>
-                            <form method="POST" action="/logout" class="block">
-                                @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
-                                    <i class="fas fa-sign-out-alt mr-2 w-4"></i>Logout
-                                </button>
-                            </form>
-                        </div>
+                    <div id="auth-section">
+                        <!-- This will be populated by JavaScript based on auth state -->
                     </div>
-                    @else
-                    <a href="/login" class="text-gray-700 hover:text-blue-600 font-medium text-sm">Login</a>
-                    <a href="/register" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">Sign Up</a>
-                    @endauth
                 </nav>
             </div>
         </div>
@@ -143,6 +101,63 @@
     </footer>
 
     <script>
+        // Initialize auth section
+        function initAuthSection() {
+            const authSection = document.getElementById('auth-section');
+            const token = localStorage.getItem('auth_token');
+
+            if (token) {
+                // User is logged in
+                authSection.innerHTML = `
+                    <!-- Wishlist -->
+                    <a href="/wishlist" class="relative group">
+                        <i class="fas fa-heart text-gray-600 hover:text-red-500 text-lg"></i>
+                        <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" id="wishlist-count">0</span>
+                    </a>
+
+                    <!-- Cart -->
+                    <a href="/cart" class="relative group">
+                        <i class="fas fa-shopping-cart text-gray-600 hover:text-blue-500 text-lg"></i>
+                        <span class="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center" id="cart-count">0</span>
+                    </a>
+
+                    <!-- User Menu -->
+                    <div class="relative group">
+                        <button class="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
+                            <img src="https://ui-avatars.com/api/?name=User&background=0D8ABC&color=fff" alt="Avatar" class="w-8 h-8 rounded-full">
+                            <i class="fas fa-chevron-down text-xs hidden md:inline"></i>
+                        </button>
+
+                        <div class="absolute right-0 w-48 bg-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto mt-1">
+                            <a href="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
+                                <i class="fas fa-user mr-2 w-4"></i>My Profile
+                            </a>
+                            <a href="/orders" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
+                                <i class="fas fa-box mr-2 w-4"></i>My Orders
+                            </a>
+                            <a href="/wallet" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
+                                <i class="fas fa-wallet mr-2 w-4"></i>My Wallet
+                            </a>
+                            <a href="/referral" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
+                                <i class="fas fa-link mr-2 w-4"></i>Referrals
+                            </a>
+                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 text-sm">
+                                <i class="fas fa-sign-out-alt mr-2 w-4"></i>Logout
+                            </button>
+                        </div>
+                    </div>
+                `;
+                updateCartCount();
+                updateWishlistCount();
+            } else {
+                // User is not logged in
+                authSection.innerHTML = `
+                    <a href="/login" class="text-gray-700 hover:text-blue-600 font-medium text-sm">Login</a>
+                    <a href="/register" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">Sign Up</a>
+                `;
+            }
+        }
+
         // Update cart count
         async function updateCartCount() {
             try {
@@ -151,19 +166,69 @@
 
                 const response = await fetch('/api/v1/cart', {
                     headers: {
-                        'Authorization': 'Bearer ' + token
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json'
                     }
                 });
                 const data = await response.json();
-                if (data.success && data.data.items) {
-                    document.getElementById('cart-count').textContent = data.data.items.length;
+                if (data.success && data.data && data.data.items) {
+                    const cartCount = document.getElementById('cart-count');
+                    if (cartCount) {
+                        cartCount.textContent = data.data.items.length;
+                    }
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.log('Error updating cart count:', e);
+            }
         }
 
-        if (localStorage.getItem('auth_token')) {
-            updateCartCount();
+        // Update wishlist count
+        async function updateWishlistCount() {
+            try {
+                const token = localStorage.getItem('auth_token');
+                if (!token) return;
+
+                const response = await fetch('/api/v1/wishlist/count', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token,
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    const wishlistCount = document.getElementById('wishlist-count');
+                    if (wishlistCount) {
+                        wishlistCount.textContent = data.data.count || 0;
+                    }
+                }
+            } catch (e) {
+                console.log('Error updating wishlist count:', e);
+            }
         }
+
+        // Logout handler
+        async function logout() {
+            try {
+                const token = localStorage.getItem('auth_token');
+                if (token) {
+                    await fetch('/api/v1/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + token,
+                            'Accept': 'application/json'
+                        }
+                    });
+                }
+            } catch (e) {
+                console.log('Logout error:', e);
+            } finally {
+                localStorage.removeItem('auth_token');
+                window.location.href = '/';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initAuthSection);
     </script>
 </body>
 

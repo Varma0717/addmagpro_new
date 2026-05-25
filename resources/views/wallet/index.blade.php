@@ -1,7 +1,7 @@
 @extends('app_layout')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-8 pt-12">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Wallet Balance Card -->
         <div class="lg:col-span-1">

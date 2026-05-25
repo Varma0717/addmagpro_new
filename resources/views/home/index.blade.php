@@ -7,9 +7,9 @@
 * @var \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $new_products
 */
 @endphp
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-8 pt-12">
     <!-- Hero Banner -->
-    <section class="mb-8">
+    <section class="mb-12">
         <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg overflow-hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 items-center">
                 <div class="p-8 md:p-12 text-white">

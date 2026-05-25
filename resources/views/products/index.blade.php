@@ -6,7 +6,7 @@
 * @var \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $products
 */
 @endphp
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-8 pt-12">
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Products</h1>

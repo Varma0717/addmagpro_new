@@ -1,7 +1,7 @@
 @extends('app_layout')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-8">
+<div class="max-w-7xl mx-auto px-4 py-8 pt-12">
     <h1 class="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
 
     @auth

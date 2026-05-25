@@ -37,24 +37,81 @@ use App\Http\Controllers\RazorpayController;
 |
 */
 
-// Route::get('/', function () {
-//     return redirect('home');
-// });
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
-Route::get('/', function () {
-    if (auth()->check()) {
-        return redirect()->route('index');
-    } else {
-        return redirect()->route('welcome_page');
-    }
-});
+/*
+|--------------------------------------------------------------------------
+| ROOT & ERROR PAGES
+|--------------------------------------------------------------------------
+*/
 
 Route::view('error_page', 'error_page');
-
 Route::view('blank', 'blank');
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMER-FACING ROUTES (PUBLIC & AUTHENTICATED)
+|--------------------------------------------------------------------------
+| These routes are for regular customers and visitors
+| Authentication: API-based (localStorage token), not session
+*/
+
+// Homepage - accessible to all visitors and customers
+Route::get('/', function () {
+    return view('home.index', [
+        'trending_products' => [],
+        'new_products' => [],
+    ]);
+})->name('home');
+
+// Product Browsing
+Route::get('/products', function () {
+    return view('products.index', ['products' => []]);
+})->name('products.index');
+
+Route::get('/products/{id}', function ($id) {
+    return redirect('/products');
+})->name('product.show');
+
+Route::get('/search', function () {
+    return view('products.index', ['products' => []]);
+})->name('search');
+
+// Customer Dashboard Pages (require API auth via localStorage token)
+Route::get('/cart', function () {
+    return view('cart.index');
+})->name('cart');
+
+Route::get('/orders', function () {
+    return view('orders.index');
+})->name('orders');
+
+Route::get('/wallet', function () {
+    return view('wallet.index');
+})->name('wallet');
+
+Route::get('/wishlist', function () {
+    return view('cart.index');
+})->name('wishlist');
+
+Route::get('/referral', function () {
+    return view('home.index');
+})->name('referral');
+
+Route::get('/profile', function () {
+    return view('home.index');
+})->name('profile');
+
+// Customer Authentication (no session, API-based)
+// These views handle login/register via fetch to /api/v1/auth/*
+Route::view('/login', 'auth.login')->middleware('guest')->name('login');
+Route::view('/register', 'auth.register')->middleware('guest')->name('register');
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN PANEL
+|--------------------------------------------------------------------------
+| Session-based authentication for admin users
+| Access: /adminlogin for login, /home for dashboard
+*/
 Route::group(['middleware' => ['isAdminLogin']], function () {
     Route::get('pending_kyc', [PendingKyc::class, 'pending_kyc'])->name('pending_kyc');
     // Route::view('home','admin_pages.index')->name('home');
@@ -173,6 +230,15 @@ Route::get('adminlogin', [AdminLogin::class, 'loginpage'])->middleware(['isAdmin
 Route::post('admin_login_submit', [AdminLogin::class, 'login_submit'])->name('admin_login_submit');
 
 Route::get('admin_logout', [AdminLogin::class, 'logout'])->name('admin_logout');
+
+/*
+|--------------------------------------------------------------------------
+| VENDOR PANEL
+|--------------------------------------------------------------------------
+| Session-based authentication for vendor users
+| Access: /login for vendor login, /register for vendor registration
+*/
+
 Route::get('vendor_logout', [VendorController::class, 'logout'])->name('vendor_logout');
 
 Route::get('login', [LoginController::class, 'login'])->middleware(['isVendoralreadyLogin'])->name('login');
@@ -215,6 +281,15 @@ Route::group(['middleware' => ['isVendorLogin']], function () {
 
 
 //Service Users
+
+/*
+|--------------------------------------------------------------------------
+| SERVICE USER PANEL
+|--------------------------------------------------------------------------
+| Session-based authentication for service users
+| Access: /service_user_login for login, /service_user_registration for registration
+*/
+
 Route::get('change_password', [AdminLogin::class, 'change_password'])->name('change_password');
 
 Route::get('index', [ServiceController::class, 'landing_page'])->middleware('isServicealreadyLogin')->name('landingpage');
@@ -283,12 +358,25 @@ Route::group(['middleware' => ['isServiceLogin']], function () {
     Route::post('filter_products', [ServiceController::class, 'filter_products'])->name('filter_products');
 });
 
+/*
+|--------------------------------------------------------------------------
+| WEBSITE POLICIES & LEGAL PAGES
+|--------------------------------------------------------------------------
+*/
+
 // Policy Routes for Website
 Route::get('privacy_policy', [PolicyController::class, 'privacy_policy'])->name('privacy_policy');
 Route::get('terms_and_conditions', [PolicyController::class, 'terms_and_conditions'])->name('terms_and_conditions');
 Route::get('refund_policy', [PolicyController::class, 'refund_policy'])->name('refund_policy');
 Route::get('shipping_policy', [PolicyController::class, 'shipping_policy'])->name('shipping_policy');
 Route::get('contact_us', [PolicyController::class, 'contact_us'])->name('contact_us');
+
+/*
+|--------------------------------------------------------------------------
+| PAYMENT GATEWAY
+|--------------------------------------------------------------------------
+| Razorpay payment processing for customer orders
+*/
 
 //Payment Gateway For Website
 Route::post('razorpay', [RazorpayController::class, 'razorpay'])->name('razorpay_submit');
@@ -321,33 +409,4 @@ Route::get('/home/new', function () {
         'trending_products' => [],
         'new_products' => [],
     ]);
-})->name('home.new');
-
-// Authentication Pages
-Route::view('/login/new', 'auth.login')->middleware('guest')->name('login.new');
-Route::view('/register/new', 'auth.register')->middleware('guest')->name('register.new');
-
-// Products Catalog
-Route::get('/products/new', function () {
-    return view('products.index', ['products' => []]);
-})->name('products.new');
-
-// Shopping Cart
-Route::get('/cart/new', function () {
-    return view('cart.index');
-})->middleware('auth:sanctum')->name('cart.new');
-
-// Orders
-Route::get('/orders/new', function () {
-    return view('orders.index');
-})->middleware('auth:sanctum')->name('orders.new');
-
-// Wallet
-Route::get('/wallet/new', function () {
-    return view('wallet.index');
-})->middleware('auth:sanctum')->name('wallet.new');
-
-// Admin Dashboard (NEW)
-Route::get('/admin/new', function () {
-    return view('admin.dashboard');
-})->middleware(['auth:sanctum'])->name('admin.dashboard.new');
+});
