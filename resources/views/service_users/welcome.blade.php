@@ -112,6 +112,61 @@
         object-fit: cover;
         border-radius: 8px;
     }
+
+    /* ====== NEW FEATURES QUICK ACCESS SECTION ====== */
+    .feature-card {
+        background: linear-gradient(135deg, #fff9f3 0%, #fff5e6 100%);
+        border: 2px solid #f0e6d8;
+        border-radius: 12px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+        height: 100%;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 32px rgba(170, 85, 0, 0.15);
+        border-color: var(--theme-color);
+        background: linear-gradient(135deg, #fff5e6 0%, #fff0d9 100%);
+    }
+
+    .feature-card-icon {
+        font-size: 2.2rem;
+        color: var(--theme-color);
+        width: 56px;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(170, 85, 0, 0.1);
+        border-radius: 50%;
+    }
+
+    .feature-card-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--title-color);
+        margin: 0;
+    }
+
+    .feature-card-desc {
+        font-size: 0.75rem;
+        color: var(--content-color);
+        margin: 0;
+    }
+
+    .features-quick-access {
+        background: linear-gradient(90deg, #f9f9f6 0%, #faf9f7 100%);
+        padding: 2rem 0;
+        margin-bottom: 1.5rem;
+    }
 </style>
 @endsection
 
@@ -137,7 +192,81 @@
     </div>
 </section>
 
-{{-- ====== 2. MEMBERSHIP CATEGORY STRIP ====== --}}
+{{-- ====== 2. QUICK ACCESS FEATURES (NEW) ====== --}}
+@if(session('service_user_id'))
+<section class="features-quick-access">
+    <div class="custom-container">
+        <div class="section-heading mb-4">
+            <h2>Quick Access</h2>
+            <p>Your shopping features</p>
+        </div>
+        <div class="row g-2 g-md-3">
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ route('products_list') }}" class="feature-card">
+                    <div class="feature-card-icon">
+                        <i class="ri-shopping-bag-line"></i>
+                    </div>
+                    <h5 class="feature-card-title">Shop</h5>
+                    <p class="feature-card-desc">Browse Products</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ route('cart.new') }}" class="feature-card">
+                    <div class="feature-card-icon">
+                        <i class="ri-shopping-cart-line"></i>
+                    </div>
+                    <h5 class="feature-card-title">Cart</h5>
+                    <p class="feature-card-desc">
+                        @if(isset($cart_count) && $cart_count > 0)
+                        {{ $cart_count }} items
+                        @else
+                        View Cart
+                        @endif
+                    </p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ route('wishlist') }}" class="feature-card">
+                    <div class="feature-card-icon">
+                        <i class="ri-heart-line"></i>
+                    </div>
+                    <h5 class="feature-card-title">Wishlist</h5>
+                    <p class="feature-card-desc">Saved Items</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ route('account_orders') }}" class="feature-card">
+                    <div class="feature-card-icon">
+                        <i class="ri-file-list-line"></i>
+                    </div>
+                    <h5 class="feature-card-title">Orders</h5>
+                    <p class="feature-card-desc">My Orders</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ route('wallet.new') }}" class="feature-card">
+                    <div class="feature-card-icon">
+                        <i class="ri-wallet-line"></i>
+                    </div>
+                    <h5 class="feature-card-title">Wallet</h5>
+                    <p class="feature-card-desc">My Balance</p>
+                </a>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2">
+                <a href="{{ route('team_details') }}" class="feature-card">
+                    <div class="feature-card-icon">
+                        <i class="ri-share-forward-line"></i>
+                    </div>
+                    <h5 class="feature-card-title">Refer</h5>
+                    <p class="feature-card-desc">Earn More</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- ====== 3. MEMBERSHIP CATEGORY STRIP ====== --}}
 <section class="category-section section-b-space">
     <div class="custom-container">
         <div class="section-heading">

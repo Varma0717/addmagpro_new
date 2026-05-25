@@ -12,8 +12,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        // Seed all essential data
+        $this->call([
+            LocationSeeder::class,
+            ServiceSeeder::class,
+            BannerSeeder::class,
+            CategorySeeder::class,
+        ]);
 
+        // Optional: Create test user
+        // \App\Models\User::factory(10)->create();
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\Admin\AllFranchise;
 use App\Http\Controllers\Admin\AdminLogin;
 use App\Http\Controllers\Admin\Banner\AddBanner;
@@ -121,7 +122,7 @@ Route::group(['middleware' => ['isAdminLogin']], function () {
     Route::post('service_update_admin', [AddBrand::class, 'service_update_admin_submit'])->name('service_update_admin');
     Route::post('classified_update_admin', [AddBrand::class, 'classified_update_admin_submit'])->name('classified_update_admin');
     Route::post('store_update_admin', [AddBrand::class, 'store_update_admin_submit'])->name('store_update_admin');
-    Route::post('category_update_admin', [AddCategory::class, 'category_update_admin_submit'])->name('category_update_admin');
+    Route::post('category_update_admin', [AddCategory::class, 'category_update_admin_submit'])->name('category_update_admin_submit');
     Route::post('brand_update_admin', [AddBrand::class, 'brand_update_admin_submit'])->name('brand_update_admin');
     Route::get('id_activation_update/{id}', [AddBrand::class, 'id_activation_update'])->name('id_activation_update');
     Route::get('business_listing_status_update/{id}', [AddBrand::class, 'business_listing_status_update'])->name('business_listing_status_update');
@@ -194,11 +195,11 @@ Route::group(['middleware' => ['isVendorLogin']], function () {
     Route::get('products_list_vendor', [VendorController::class, 'products_list'])->name('products_list_vendors');
     Route::get('vendor_category_update/{category_id}', [VendorController::class, 'vendor_category_update'])->name('vendor_category_update');
     Route::get('vendor_banner_update/{vendor_id}', [VendorController::class, 'vendor_banner_update'])->name('vendor_banner_update');
-    Route::post('vendor_category_update', [VendorController::class, 'vendor_category_update_submit'])->name('vendor_category_update');
+    Route::post('vendor_category_update', [VendorController::class, 'vendor_category_update_submit'])->name('vendor_category_update_submit');
     Route::post('vendor_banner_update_modify', [VendorController::class, 'vendor_banner_update_modify'])->name('vendor_banner_update_modify');
     Route::get('vendor_category_delete/{id}', [VendorController::class, 'vendor_category_delete'])->name('vendor_category_delete');
     Route::get('vendor_brand_update/{brand_id}', [VendorController::class, 'vendor_brand_update'])->name('vendor_brand_update');
-    Route::post('vendor_brand_update', [VendorController::class, 'vendor_brand_update_submit'])->name('vendor_brand_update');
+    Route::post('vendor_brand_update', [VendorController::class, 'vendor_brand_update_submit'])->name('vendor_brand_update_submit');
     Route::get('vendor_brand_delete/{brand_id}', [VendorController::class, 'vendor_brand_delete'])->name('vendor_brand_delete');
     Route::view('category_update', 'vendor_pages.category_update');
     Route::get('vendor_settings', [VendorController::class, 'vendor_settings'])->name('vendor_settings');
@@ -209,7 +210,7 @@ Route::group(['middleware' => ['isVendorLogin']], function () {
     Route::get('product_delete/{product_id}', [VendorController::class, 'product_delete'])->name('product_delete');
     Route::get('product_update/{product_id}', [VendorController::class, 'product_update'])->name('product_update');
     Route::post('product_update_submit', [VendorController::class, 'product_update_submit'])->name('product_update_submit');
-    Route::post('change_password', [VendorController::class, 'change_password'])->name('change_password');
+    Route::post('change_password', [VendorController::class, 'change_password'])->name('vendor_change_password_submit');
 });
 
 
@@ -219,9 +220,9 @@ Route::get('change_password', [AdminLogin::class, 'change_password'])->name('cha
 Route::get('index', [ServiceController::class, 'landing_page'])->middleware('isServicealreadyLogin')->name('landingpage');
 Route::post('landing_page', [ServiceController::class, 'landing_page_submit'])->name('landing_page');
 Route::get('service_user_login', [ServiceController::class, 'service_user_login'])->middleware('isServicealreadyLogin')->name('service_user_login');
-Route::post('service_user_login', [ServiceController::class, 'login_submit'])->name('service_user_login');
+Route::post('service_user_login', [ServiceController::class, 'login_submit'])->name('service_user_login_submit');
 Route::get('service_user_registration/{referal?}', [ServiceController::class, 'service_user_registration'])->name('service_user_registration');
-Route::post('service_user_registration', [ServiceController::class, 'service_registration_submit'])->name('service_user_registration');
+Route::post('service_user_registration', [ServiceController::class, 'service_registration_submit'])->name('service_user_registration_submit');
 Route::get('service_user_logout', [ServiceController::class, 'service_user_logout'])->name('service_user_logout');
 Route::get('welcome_page', [ServiceController::class, 'welcome_page'])->name('welcome_page');
 
@@ -274,7 +275,7 @@ Route::group(['middleware' => ['isServiceLogin']], function () {
     Route::get('team_details', [ServiceController::class, 'team_details'])->name('team_details');
     Route::get('id_activation', [ServiceController::class, 'id_activation'])->name('id_activation');
     Route::get('withdraw_amount', [ServiceController::class, 'withdraw_amount'])->name('withdraw_amount');
-    Route::post('/user/withdraw', [ServiceController::class, 'storeWithdrawRequest'])->name('user_withdraw_request');
+    Route::post('/user/withdraw', [ServiceController::class, 'storeWithdrawRequest'])->name('user_withdraw_request_submit');
     Route::get('vendor_withdraw_amount', [ServiceController::class, 'vendor_withdraw_amount'])->name('vendor_withdraw_amount');
     Route::post('user_withdraw_request', [ServiceController::class, 'user_withdraw_request'])->name('user_withdraw_request');
     Route::get('user_wallet', [ServiceController::class, 'user_wallet'])->name('user_wallet');
@@ -290,7 +291,7 @@ Route::get('shipping_policy', [PolicyController::class, 'shipping_policy'])->nam
 Route::get('contact_us', [PolicyController::class, 'contact_us'])->name('contact_us');
 
 //Payment Gateway For Website
-Route::post('razorpay', [RazorpayController::class, 'razorpay'])->name('razorpay');
+Route::post('razorpay', [RazorpayController::class, 'razorpay'])->name('razorpay_submit');
 Route::post('discount_products_razorpay', [RazorpayController::class, 'discount_products_razorpay'])->name('discount_products_razorpay');
 Route::get('payment', [RazorpayController::class, 'payment'])->name('payment');
 Route::get('razorpay', [RazorpayController::class, 'razorpay'])->name('razorpay');
@@ -309,3 +310,44 @@ Route::get('/clear-cache', function () {
     Artisan::call('config:cache');
     return 'Cache cleared!';
 });
+
+// ============================================
+// CUSTOMER-FACING ROUTES (NEW ECOMMERCE UI)
+// ============================================
+
+// Home Page
+Route::get('/home/new', function () {
+    return view('home.index', [
+        'trending_products' => [],
+        'new_products' => [],
+    ]);
+})->name('home.new');
+
+// Authentication Pages
+Route::view('/login/new', 'auth.login')->middleware('guest')->name('login.new');
+Route::view('/register/new', 'auth.register')->middleware('guest')->name('register.new');
+
+// Products Catalog
+Route::get('/products/new', function () {
+    return view('products.index', ['products' => []]);
+})->name('products.new');
+
+// Shopping Cart
+Route::get('/cart/new', function () {
+    return view('cart.index');
+})->middleware('auth:sanctum')->name('cart.new');
+
+// Orders
+Route::get('/orders/new', function () {
+    return view('orders.index');
+})->middleware('auth:sanctum')->name('orders.new');
+
+// Wallet
+Route::get('/wallet/new', function () {
+    return view('wallet.index');
+})->middleware('auth:sanctum')->name('wallet.new');
+
+// Admin Dashboard (NEW)
+Route::get('/admin/new', function () {
+    return view('admin.dashboard');
+})->middleware(['auth:sanctum'])->name('admin.dashboard.new');
