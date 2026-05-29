@@ -4,20 +4,22 @@ class HomeFeed {
   HomeFeed({
     required this.banners,
     required this.categories,
+    required this.services,
     required this.featuredProducts,
-    required this.featuredListings,
-    required this.nearbyListings,
-    required this.offers,
-    required this.trendingProducts,
+    required this.recommendedProducts,
+    required this.newLaunches,
+    required this.referralCard,
+    required this.userWallet,
   });
 
   final List<HomeBannerItem> banners;
   final List<HomeCategoryItem> categories;
+  final List<HomeServiceItem> services;
   final List<HomeProductItem> featuredProducts;
-  final List<HomeListingItem> featuredListings;
-  final List<HomeListingItem> nearbyListings;
-  final List<HomeOfferItem> offers;
-  final List<HomeProductItem> trendingProducts;
+  final List<HomeProductItem> recommendedProducts;
+  final List<HomeProductItem> newLaunches;
+  final ReferralCard? referralCard;
+  final UserWallet? userWallet;
 
   factory HomeFeed.fromJson(Map<String, dynamic> json) {
     final data = json['data'];
@@ -28,11 +30,22 @@ class HomeFeed {
     return HomeFeed(
       banners: _mapList(data['banners'], HomeBannerItem.fromJson),
       categories: _mapList(data['categories'], HomeCategoryItem.fromJson),
-      featuredProducts: _mapList(data['featured_products'], HomeProductItem.fromJson),
-      featuredListings: _mapList(data['featured_listings'], HomeListingItem.fromJson),
-      nearbyListings: _mapList(data['nearby_listings'], HomeListingItem.fromJson),
-      offers: _mapList(data['offers'], HomeOfferItem.fromJson),
-      trendingProducts: _mapList(data['trending_products'], HomeProductItem.fromJson),
+      services: _mapList(data['services'], HomeServiceItem.fromJson),
+      featuredProducts: _mapList(
+        data['featured_products'],
+        HomeProductItem.fromJson,
+      ),
+      recommendedProducts: _mapList(
+        data['recommended_products'],
+        HomeProductItem.fromJson,
+      ),
+      newLaunches: _mapList(data['new_launches'], HomeProductItem.fromJson),
+      referralCard: data['referral_card'] is Map<String, dynamic>
+          ? ReferralCard.fromJson(data['referral_card'])
+          : null,
+      userWallet: data['user_wallet'] is Map<String, dynamic>
+          ? UserWallet.fromJson(data['user_wallet'])
+          : null,
     );
   }
 
@@ -130,7 +143,9 @@ class HomeProductItem {
       effectivePrice: _toDouble(json['effective_price']) ?? 0,
       ratingAvg: _toDouble(json['rating_avg']),
       category: json['category'] as String?,
-      primaryImageUrl: AppConfig.resolveImageUrl(json['primary_image_url'] as String?),
+      primaryImageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String?,
+      ),
     );
   }
 }
@@ -162,7 +177,9 @@ class HomeListingItem {
       city: json['city'] as String?,
       category: json['category'] as String?,
       ratingAvg: _toDouble(json['rating_avg']),
-      primaryImageUrl: AppConfig.resolveImageUrl(json['primary_image_url'] as String?),
+      primaryImageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String?,
+      ),
     );
   }
 }
@@ -192,6 +209,69 @@ class HomeOfferItem {
       type: (json['type'] as String?) ?? '',
       value: _toDouble(json['value']) ?? 0,
       minOrderAmount: _toDouble(json['min_order_amount']) ?? 0,
+    );
+  }
+}
+
+class HomeServiceItem {
+  HomeServiceItem({
+    required this.id,
+    required this.name,
+    required this.slug,
+    required this.iconUrl,
+    required this.actionUrl,
+  });
+
+  final int id;
+  final String name;
+  final String slug;
+  final String? iconUrl;
+  final String? actionUrl;
+
+  factory HomeServiceItem.fromJson(Map<String, dynamic> json) {
+    return HomeServiceItem(
+      id: _toInt(json['id']) ?? 0,
+      name: (json['name'] as String?) ?? '-',
+      slug: (json['slug'] as String?) ?? '',
+      iconUrl: AppConfig.resolveImageUrl(json['icon_url'] as String?),
+      actionUrl: json['action_url'] as String?,
+    );
+  }
+}
+
+class ReferralCard {
+  ReferralCard({
+    required this.referralCode,
+    required this.referralLink,
+    required this.bonusAvailable,
+    required this.text,
+  });
+
+  final String referralCode;
+  final String referralLink;
+  final double bonusAvailable;
+  final String text;
+
+  factory ReferralCard.fromJson(Map<String, dynamic> json) {
+    return ReferralCard(
+      referralCode: (json['referral_code'] as String?) ?? '',
+      referralLink: (json['referral_link'] as String?) ?? '',
+      bonusAvailable: _toDouble(json['bonus_available']) ?? 0,
+      text: (json['text'] as String?) ?? '',
+    );
+  }
+}
+
+class UserWallet {
+  UserWallet({required this.balance, required this.currency});
+
+  final double balance;
+  final String currency;
+
+  factory UserWallet.fromJson(Map<String, dynamic> json) {
+    return UserWallet(
+      balance: _toDouble(json['balance']) ?? 0,
+      currency: (json['currency'] as String?) ?? 'INR',
     );
   }
 }

@@ -10,6 +10,7 @@ plugins {
 }
 
 // Load signing configuration from key.properties if it exists
+// key.properties is in the android/ directory (rootProject for this module)
 val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
@@ -52,12 +53,14 @@ android {
             if (keystoreProperties.isNotEmpty()) {
                 keyAlias = keystoreProperties["keyAlias"] as String?
                 keyPassword = keystoreProperties["keyPassword"] as String?
-                storeFile = if (keystoreProperties["storeFile"] != null) {
-                    file(keystoreProperties["storeFile"] as String)
-                } else {
-                    null
-                }
                 storePassword = keystoreProperties["storePassword"] as String?
+                
+                // Resolve storeFile path relative to the rootProject (android/ directory)
+                val storeFilePath = keystoreProperties["storeFile"] as String?
+                if (storeFilePath != null) {
+                    storeFile = rootProject.file(storeFilePath)
+                    println("Signing config: Using keystore from ${storeFile?.absolutePath}")
+                }
             }
         }
     }
