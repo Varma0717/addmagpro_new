@@ -56,7 +56,7 @@ class AuthApiController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'phone' => 'required|string',
             'password' => 'required|string',
         ]);
 
@@ -64,9 +64,9 @@ class AuthApiController extends Controller
             return $this->validationErrorResponse($validator->errors()->toArray(), 422);
         }
 
-        // Find user by email or phone
-        $user = User::where('email', $request->email)
-            ->orWhere('phone', $request->email)
+        // Find user by phone or email
+        $user = User::where('phone', $request->phone)
+            ->orWhere('email', $request->phone)
             ->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {

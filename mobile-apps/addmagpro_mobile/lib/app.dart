@@ -31,10 +31,12 @@ class _AddMagProAppState extends State<AddMagProApp> {
   void initState() {
     super.initState();
 
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ));
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
 
     final apiClient = ApiClient();
     final storage = SecureStorageService();
@@ -74,7 +76,9 @@ class _AddMagProAppState extends State<AddMagProApp> {
     }
 
     _lastAuthToken = token;
-    _pushNotificationService.registerOrUpdateToken(authTokenProvider: () => _appState.token);
+    _pushNotificationService.registerOrUpdateToken(
+      authTokenProvider: () => _appState.token,
+    );
   }
 
   void _handleNotificationRoute(Map<String, dynamic> data) {
@@ -88,11 +92,17 @@ class _AddMagProAppState extends State<AddMagProApp> {
     if (navigator == null) return;
 
     if (type == 'order' || event.startsWith('order_')) {
-      navigator.push(MaterialPageRoute<void>(builder: (_) => OrdersScreen(token: token)));
+      navigator.push(
+        MaterialPageRoute<void>(builder: (_) => OrdersScreen(token: token)),
+      );
       return;
     }
 
-    navigator.push(MaterialPageRoute<void>(builder: (_) => NotificationsScreen(token: token)));
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => NotificationsScreen(token: token),
+      ),
+    );
   }
 
   @override
@@ -119,25 +129,24 @@ class _AddMagProAppState extends State<AddMagProApp> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(Icons.storefront_rounded, color: Colors.white, size: 40),
-              ),
+              Image.asset('assets/logo.png', width: 80, height: 80),
               const SizedBox(height: 20),
               const Text(
                 'AddMagPro',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 24),
               const SizedBox(
                 width: 28,
                 height: 28,
-                child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.primary),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.primary,
+                ),
               ),
             ],
           ),
