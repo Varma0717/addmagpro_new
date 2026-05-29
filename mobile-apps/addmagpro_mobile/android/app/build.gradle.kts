@@ -1,9 +1,19 @@
+import java.io.FileInputStream
+import java.util.*
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Load signing configuration from key.properties if it exists
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -39,18 +49,30 @@ android {
 
     signingConfigs {
         create("release") {
-            // Using debug keystore for now - follow SIGNING_GUIDE.md for production keystore
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-            storeFile = file("$rootDir/debug.keystore")
-            storePassword = "android"
+            if (keystoreProperties.isNotEmpty()) {
+                keyAlias = keystoreProperties["keyAlias"] as String?
+                keyPassword = keystoreProperties["keyPassword"] as String?
+                storeFile = if (keystoreProperties["storeFile"] != null) {
+                    file(keystoreProperties["storeFile"] as String)
+                } else {
+                    null
+                }
+                storePassword = keystoreProperties["storePassword"] as String?
+            }
         }
     }
 
     buildTypes {
         release {
-            // AddMagPro production release configuration
-            signingConfig = signingConfigs.getByName("release")
+            if (keystoreProperties.isNotEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+                isMinifyEnabled = true
+                isShrinkResources = true
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+            }
         }
     }
 }

@@ -1,7 +1,6 @@
-@extends('service_user_dashboard_layouts.master')
-@section('page_title', 'Login | AddMagPro')
+<?php $__env->startSection('page_title', 'Login | AddMagPro'); ?>
 
-@section('extra_css')
+<?php $__env->startSection('extra_css'); ?>
 <style>
     .auth-section {
         min-height: calc(100vh - 200px);
@@ -96,9 +95,9 @@
         background: #e9ecef;
     }
 </style>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('mainsection')
+<?php $__env->startSection('mainsection'); ?>
 <section class="auth-section">
     <div class="custom-container">
         <div class="row justify-content-center">
@@ -107,8 +106,8 @@
                     <div class="row g-0">
                         <div class="col-lg-5 d-none d-lg-flex auth-left">
                             <div>
-                                <a href="{{ route('welcome_page') }}">
-                                    <img src="{{ asset('assets/user_assets/images/logo.png') }}" alt="AddMagPro" class="img-fluid">
+                                <a href="<?php echo e(route('welcome_page')); ?>">
+                                    <img src="<?php echo e(asset('assets/user_assets/images/logo.png')); ?>" alt="AddMagPro" class="img-fluid">
                                 </a>
                                 <h3>Welcome Back!</h3>
                                 <p>Log in to your AddMagPro account and continue earning rewards while you shop.</p>
@@ -121,34 +120,64 @@
                         <div class="col-lg-7 auth-right">
                             <h2>Sign In</h2>
                             <p>Enter your credentials to access your account</p>
-                            @if(session('error'))
+                            <?php if(session('error')): ?>
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                {{ session('error') }}
+                                <?php echo e(session('error')); ?>
+
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
-                            @endif
-                            @if(session('success'))
+                            <?php endif; ?>
+                            <?php if(session('success')): ?>
                             <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                {{ session('success') }}
+                                <?php echo e(session('success')); ?>
+
                                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                             </div>
-                            @endif
-                            <form action="{{ route('landing_page') }}" method="POST">
-                                @csrf
+                            <?php endif; ?>
+                            <form action="<?php echo e(route('landing_page')); ?>" method="POST">
+                                <?php echo csrf_field(); ?>
                                 <div class="mb-3">
                                     <label for="mobile_no" class="form-label fw-semibold">Mobile Number</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="ri-phone-line"></i></span>
-                                        <input type="number" class="form-control @error('mobile_no') is-invalid @enderror" id="mobile_no" name="mobile_no" placeholder="Enter your mobile number" value="{{ old('mobile_no') }}" required>
-                                        @error('mobile_no')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        <input type="number" class="form-control <?php $__errorArgs = ['mobile_no'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="mobile_no" name="mobile_no" placeholder="Enter your mobile number" value="<?php echo e(old('mobile_no')); ?>" required>
+                                        <?php $__errorArgs = ['mobile_no'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="invalid-feedback"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <label for="password" class="form-label fw-semibold">Password</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="ri-lock-line"></i></span>
-                                        <input type="password" class="form-control @error('password') is-invalid @enderror" id="password" name="password" placeholder="Enter your password" required>
-                                        @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                                        <input type="password" class="form-control <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" id="password" name="password" placeholder="Enter your password" required>
+                                        <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?><div class="invalid-feedback"><?php echo e($message); ?></div><?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
                                 </div>
                                 <button type="submit" class="btn-auth mt-2">
@@ -158,7 +187,7 @@
                             <div class="divider">or</div>
                             <div class="text-center">
                                 <p class="mb-0">New to AddMagPro?
-                                    <a href="{{ route('service_user_registration') }}" style="color:var(--theme-color);font-weight:600;">Create Account</a>
+                                    <a href="<?php echo e(route('service_user_registration')); ?>" style="color:var(--theme-color);font-weight:600;">Create Account</a>
                                 </p>
                             </div>
                         </div>
@@ -168,4 +197,5 @@
         </div>
     </div>
 </section>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('service_user_dashboard_layouts.master', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\admagpro\resources\views/service_users/login.blade.php ENDPATH**/ ?>

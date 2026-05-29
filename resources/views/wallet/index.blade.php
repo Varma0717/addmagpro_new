@@ -1,54 +1,61 @@
-@extends('app_layout')
+@extends('service_user_dashboard_layouts.master')
+@section('page_title', 'My Wallet | AddMagPro')
+@section('mainsection')
+<section class="section-b-space">
+    <div class="custom-container">
+        <h4 class="fw-bold mb-4">My Wallet</h4>
+        <div class="p-4 mb-4 text-white text-center rounded" style="background:linear-gradient(135deg,var(--theme-color),#7a2800);">
+            <p class="mb-0">Total Wallet Balance</p>
+            <h1 class="fw-bold my-2">₹<span id="balance">0</span></h1>
+            <a href="{{ route('user_wallet') }}" class="btn mt-2" style="background:#fff;color:var(--theme-color);font-weight:700;">
+                View Wallet Details
+            </a>
+        </div>
 
-@section('content')
-<div class="max-w-7xl mx-auto px-4 py-8 pt-12">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Wallet Balance Card -->
-        <div class="lg:col-span-1">
-            <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg text-white p-8">
-                <p class="text-blue-100 mb-2">Wallet Balance</p>
-                <h2 class="text-4xl font-bold mb-8">₹<span id="balance">0</span></h2>
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <a href="/wallet/topup" class="btn w-100" style="background:var(--theme-color);color:#fff;font-weight:700;padding:0.75rem;">
+                    <i class="ri-add-line"></i> Add Money to Wallet
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ route('withdraw_amount') }}" class="btn w-100 btn-outline-warning" style="font-weight:700;padding:0.75rem;color:var(--theme-color);border-color:var(--theme-color);">
+                    <i class="ri-money-withdraw-line"></i> Withdraw Money
+                </a>
+            </div>
+        </div>
 
-                <div class="space-y-2">
-                    <a href="/wallet/topup" class="block bg-white text-blue-600 px-4 py-2 rounded-lg text-center font-semibold hover:bg-gray-100">
-                        Add Money
-                    </a>
-                    <button onclick="openTransferModal()" class="w-full bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-800">
-                        Send Money
-                    </button>
+        <!-- Statistics -->
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="p-4 rounded" style="background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.07);border-top:4px solid var(--theme-color);">
+                    <p class="text-muted mb-1">Total Received</p>
+                    <h4 class="fw-bold mb-0">₹<span id="total-received">0</span></h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 rounded" style="background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.07);border-top:4px solid #1976d2;">
+                    <p class="text-muted mb-1">Total Spent</p>
+                    <h4 class="fw-bold mb-0">₹<span id="total-spent">0</span></h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 rounded" style="background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.07);border-top:4px solid #388e3c;">
+                    <p class="text-muted mb-1">Pending Withdrawals</p>
+                    <h4 class="fw-bold mb-0">₹<span id="pending-withdrawal">0</span></h4>
                 </div>
             </div>
         </div>
 
-        <!-- Wallet Details -->
-        <div class="lg:col-span-2">
-            <div class="space-y-6">
-                <!-- Statistics -->
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Statistics</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="text-center">
-                            <p class="text-gray-600 text-sm">Total Received</p>
-                            <p class="text-2xl font-bold text-gray-900" id="total-received">₹0</p>
-                        </div>
-                        <div class="text-center">
-                            <p class="text-gray-600 text-sm">Total Spent</p>
-                            <p class="text-2xl font-bold text-gray-900" id="total-spent">₹0</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Recent Transactions -->
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h3 class="text-lg font-bold text-gray-900 mb-4">Recent Transactions</h3>
-                    <div id="transactions-list" class="space-y-3">
-                        <p class="text-gray-500">Loading...</p>
-                    </div>
-                </div>
+        <!-- Recent Transactions -->
+        <div class="mt-4 p-4 rounded" style="background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+            <h5 class="fw-bold mb-3">Recent Transactions</h5>
+            <div id="transactions-list" class="space-y-3">
+                <p class="text-muted">Loading transactions...</p>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 <script>
     const token = localStorage.getItem('auth_token');
@@ -74,19 +81,19 @@
                         'Authorization': 'Bearer ' + token
                     }
                 });
-                const txData = txResponse.json();
+                const txData = await txResponse.json();
                 if (txData.success) {
                     const txs = txData.data || [];
                     const html = txs.length === 0 ?
-                        '<p class="text-gray-500">No transactions yet</p>' :
+                        '<p class="text-muted">No transactions yet</p>' :
                         txs.map(tx => `
-                            <div class="flex justify-between items-center pb-3 border-b">
+                            <div class="d-flex justify-content-between align-items-center pb-3 border-bottom">
                                 <div>
-                                    <p class="font-semibold text-gray-900">${tx.type}</p>
-                                    <p class="text-sm text-gray-600">${new Date(tx.created_at).toLocaleDateString()}</p>
+                                    <p class="fw-semibold text-dark mb-1">${tx.type}</p>
+                                    <p class="text-muted small">${new Date(tx.created_at).toLocaleDateString()}</p>
                                 </div>
-                                <p class="font-bold ${tx.type.includes('Credit') ? 'text-green-600' : 'text-red-600'}">
-                                    ${tx.type.includes('Credit') ? '+' : '-'}₹${Math.abs(tx.amount)}
+                                <p class="fw-bold ${tx.type.includes('Credit') ? 'text-success' : 'text-danger'} mb-0">
+                                    ${tx.type.includes('Credit') ? '+' : '-'}₹${Math.abs(tx.amount).toFixed(2)}
                                 </p>
                             </div>
                         `).join('');

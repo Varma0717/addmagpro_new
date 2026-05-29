@@ -56,11 +56,12 @@ Route::view('blank', 'blank');
 
 // Homepage - accessible to all visitors and customers
 Route::get('/', function () {
-    return view('home.index', [
-        'trending_products' => [],
-        'new_products' => [],
-    ]);
-})->name('home');
+    if (auth()->check()) {
+        return redirect()->route('index');
+    } else {
+        return redirect()->route('welcome_page');
+    }
+});
 
 // Product Browsing
 Route::get('/products', function () {
@@ -83,10 +84,6 @@ Route::get('/cart', function () {
 Route::get('/orders', function () {
     return view('orders.index');
 })->name('orders');
-
-Route::get('/wallet', function () {
-    return view('wallet.index');
-})->name('wallet');
 
 Route::get('/wishlist', function () {
     return view('cart.index');
@@ -284,18 +281,17 @@ Route::group(['middleware' => ['isVendorLogin']], function () {
 
 /*
 |--------------------------------------------------------------------------
-| SERVICE USER PANEL
+| SERVICE USER & CUSTOMER LOGIN PANEL
 |--------------------------------------------------------------------------
-| Session-based authentication for service users
-| Access: /service_user_login for login, /service_user_registration for registration
+| Single unified login for all frontend users (customers and service users)
+| Session-based authentication
+| Access: /index for login, /service_user_registration for registration
 */
 
 Route::get('change_password', [AdminLogin::class, 'change_password'])->name('change_password');
 
 Route::get('index', [ServiceController::class, 'landing_page'])->middleware('isServicealreadyLogin')->name('landingpage');
 Route::post('landing_page', [ServiceController::class, 'landing_page_submit'])->name('landing_page');
-Route::get('service_user_login', [ServiceController::class, 'service_user_login'])->middleware('isServicealreadyLogin')->name('service_user_login');
-Route::post('service_user_login', [ServiceController::class, 'login_submit'])->name('service_user_login_submit');
 Route::get('service_user_registration/{referal?}', [ServiceController::class, 'service_user_registration'])->name('service_user_registration');
 Route::post('service_user_registration', [ServiceController::class, 'service_registration_submit'])->name('service_user_registration_submit');
 Route::get('service_user_logout', [ServiceController::class, 'service_user_logout'])->name('service_user_logout');

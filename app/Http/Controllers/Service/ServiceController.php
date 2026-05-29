@@ -48,26 +48,6 @@ use App\Models\Admin_Panel\WithdrawalRequest;
 class ServiceController extends Controller
 {
     public $user_cart_products;
-    public function service_user_login()
-    {
-        return view('service_users.login');
-    }
-
-    public function login_submit(Request $req)
-    {
-        $user = ServiceUser::where('member_phone', $req->mobile_no)->first();
-        if ($user) {
-            $data = password_verify($req->password, $user->password);
-        }
-        if ($user and $data) {
-            $req->session()->put('service_user_name', $user->member_name);
-            $req->session()->put('service_user_id', $user->service_id);
-            toastr()->success('User Login Success!');
-            return redirect()->route('welcome_page');
-        }
-        toastr()->error('User Login Failed!');
-        return redirect('service_user_login');
-    }
 
     public function service_user_registration($referal = null)
     {
@@ -565,37 +545,37 @@ class ServiceController extends Controller
     }
 
     public function add_to_cart($product_id, $quantity)
-{
-    $service_user_id = Session::get('service_user_id');
+    {
+        $service_user_id = Session::get('service_user_id');
 
-    $newProduct = Products::where('product_id', $product_id)->first();
+        $newProduct = Products::where('product_id', $product_id)->first();
 
-    if (!$newProduct) {
-        toastr()->error('Product not found');
-        return redirect()->back();
-    }
-
-    $existing_cart_product = Cartproducts::where('product_id', $product_id)
-        ->where('service_user_id', $service_user_id)
-        ->first();
-
-    if ($existing_cart_product) {
-        toastr()->error('Product Already Added to Cart!');
-        return redirect()->back();
-    }
-
-    $oldCartItem = Cartproducts::where('service_user_id', $service_user_id)->first();
-
-    if ($oldCartItem) {
-        $oldProduct = Products::where('product_id', $oldCartItem->product_id)->first();
-
-        if ($oldProduct && $oldProduct->vendor_id != $newProduct->vendor_id) {
-            Cartproducts::where('service_user_id', $service_user_id)->delete();
-            toastr()->error('Old Vendor Cart Items are Removed');
+        if (!$newProduct) {
+            toastr()->error('Product not found');
+            return redirect()->back();
         }
-    }
 
-    $cart = new Cartproducts;
+        $existing_cart_product = Cartproducts::where('product_id', $product_id)
+            ->where('service_user_id', $service_user_id)
+            ->first();
+
+        if ($existing_cart_product) {
+            toastr()->error('Product Already Added to Cart!');
+            return redirect()->back();
+        }
+
+        $oldCartItem = Cartproducts::where('service_user_id', $service_user_id)->first();
+
+        if ($oldCartItem) {
+            $oldProduct = Products::where('product_id', $oldCartItem->product_id)->first();
+
+            if ($oldProduct && $oldProduct->vendor_id != $newProduct->vendor_id) {
+                Cartproducts::where('service_user_id', $service_user_id)->delete();
+                toastr()->error('Old Vendor Cart Items are Removed');
+            }
+        }
+
+        $cart = new Cartproducts;
         $existing_cart_product = Cartproducts::where('product_id', $product_id)
             ->where('service_user_id', $service_user_id)
             ->first();
@@ -609,7 +589,7 @@ class ServiceController extends Controller
         $cart->save();
         toastr()->success('Product Added to Cart');
         return redirect()->back();
-}
+    }
 
 
     public function add_to_wishlist($product_id)
@@ -1151,17 +1131,16 @@ class ServiceController extends Controller
 
     public function landing_page()
     {
-        return view('service_users.landing_page');
+        return view('service_users.login');
     }
 
 
     public function landing_page_submit(Request $req)
     {
         $user = ServiceUser::where('member_phone', $req->mobile_no)->first();
-        // return $user;
+        $data = false;
         if ($user) {
             $data = password_verify($req->password, $user->password);
-            // return $data;
         }
         if ($user and $data) {
             $req->session()->put('service_user_name', $user->member_name);

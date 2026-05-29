@@ -5,25 +5,25 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('page_title', 'AddMagPro')</title>
-    <link rel="icon" href="{{ asset('assets/user_assets/images/favicon-32x32.webp') }}" type="image/webp">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo $__env->yieldContent('page_title', 'AddMagPro'); ?></title>
+    <link rel="icon" href="<?php echo e(asset('assets/user_assets/images/favicon-32x32.webp')); ?>" type="image/webp">
 
     <script>
-        window.KARTIFY_ASSET_URL = "{{ asset('') }}";
+        window.KARTIFY_ASSET_URL = "<?php echo e(asset('')); ?>";
     </script>
-    {{-- Kartify Fonts --}}
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/kartify/fonts/br-hendrix/stylesheet.css') }}">
-    {{-- Bootstrap 5 --}}
-    <link rel="stylesheet" id="rtl-link" type="text/css" href="{{ asset('assets/kartify/css/vendors/bootstrap.css') }}">
-    {{-- Iconsax --}}
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/kartify/css/vendors/iconsax.css') }}">
-    {{-- Remix Icons --}}
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/kartify/css/vendors/remixicon.css') }}">
-    {{-- Swiper --}}
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/kartify/css/vendors/swiper.css') }}">
-    {{-- Kartify Main Style --}}
-    <link rel="stylesheet" type="text/css" href="{{ asset('assets/kartify/css/style.css') }}">
+    
+    <link rel="stylesheet" type="text/css" href="<?php echo e(asset('assets/kartify/fonts/br-hendrix/stylesheet.css')); ?>">
+    
+    <link rel="stylesheet" id="rtl-link" type="text/css" href="<?php echo e(asset('assets/kartify/css/vendors/bootstrap.css')); ?>">
+    
+    <link rel="stylesheet" type="text/css" href="<?php echo e(asset('assets/kartify/css/vendors/iconsax.css')); ?>">
+    
+    <link rel="stylesheet" type="text/css" href="<?php echo e(asset('assets/kartify/css/vendors/remixicon.css')); ?>">
+    
+    <link rel="stylesheet" type="text/css" href="<?php echo e(asset('assets/kartify/css/vendors/swiper.css')); ?>">
+    
+    <link rel="stylesheet" type="text/css" href="<?php echo e(asset('assets/kartify/css/style.css')); ?>">
     <style>
         :root {
             --primary-color: 170, 85, 0;
@@ -156,12 +156,12 @@
             }
         }
     </style>
-    @yield('extra_css')
+    <?php echo $__env->yieldContent('extra_css'); ?>
 </head>
 
 <body class="base-bg-color">
 
-    {{-- Page Loader --}}
+    
     <div class="preloader">
         <div class="progress-container">
             <div class="progress-bar preloader-progress-bar"></div>
@@ -176,24 +176,24 @@
         <div class="percentage">0</div>
     </div>
 
-    @include('service_user_dashboard_layouts.header')
+    <?php echo $__env->make('service_user_dashboard_layouts.header', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
-    @yield('mainsection')
+    <?php echo $__env->yieldContent('mainsection'); ?>
 
-    {{-- Bootstrap JS --}}
-    <script src="{{ asset('assets/kartify/js/bootstrap/bootstrap.bundle.js') }}"></script>
-    {{-- Swiper --}}
-    <script src="{{ asset('assets/kartify/js/swiper.js') }}"></script>
-    {{-- Iconsax --}}
-    <script src="{{ asset('assets/kartify/js/iconsax.js') }}"></script>
-    {{-- Lazyload (removes initial image blur) --}}
-    <script src="{{ asset('assets/kartify/js/lazyload.js') }}"></script>
-    {{-- GSAP + SplitType (required for page loader) --}}
-    <script src="{{ asset('assets/kartify/js/gsap/gsap.min.js') }}"></script>
-    <script src="{{ asset('assets/kartify/js/gsap/split-type.js') }}"></script>
-    {{-- Kartify Scripts --}}
-    <script src="{{ asset('assets/kartify/js/script.js') }}"></script>
-    @yield('extra_js')
+    
+    <script src="<?php echo e(asset('assets/kartify/js/bootstrap/bootstrap.bundle.js')); ?>"></script>
+    
+    <script src="<?php echo e(asset('assets/kartify/js/swiper.js')); ?>"></script>
+    
+    <script src="<?php echo e(asset('assets/kartify/js/iconsax.js')); ?>"></script>
+    
+    <script src="<?php echo e(asset('assets/kartify/js/lazyload.js')); ?>"></script>
+    
+    <script src="<?php echo e(asset('assets/kartify/js/gsap/gsap.min.js')); ?>"></script>
+    <script src="<?php echo e(asset('assets/kartify/js/gsap/split-type.js')); ?>"></script>
+    
+    <script src="<?php echo e(asset('assets/kartify/js/script.js')); ?>"></script>
+    <?php echo $__env->yieldContent('extra_js'); ?>
 </body>
 
-</html>
+</html><?php /**PATH C:\xampp\htdocs\admagpro\resources\views/service_user_dashboard_layouts/master.blade.php ENDPATH**/ ?>

@@ -12,7 +12,7 @@
                 </div>
                 <div class="p-4 rounded" style="background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.07);">
                     <h6 class="fw-bold mb-3">Bank Details for Withdrawal</h6>
-                    <form action="{{ route('storeWithdrawRequest') }}" method="POST">
+                    <form action="{{ route('user_withdraw_request_submit') }}" method="POST">
                         @csrf
                         <div class="row g-3">
                             <div class="col-md-6">

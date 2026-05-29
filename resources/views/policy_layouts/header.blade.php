@@ -9,7 +9,7 @@
                 <a href="{{ route('privacy_policy') }}" style="color:#333;font-weight:500;font-size:.9rem;">Privacy</a>
                 <a href="{{ route('terms_and_conditions') }}" style="color:#333;font-weight:500;font-size:.9rem;">Terms</a>
                 <a href="{{ route('contact_us') }}" style="color:#333;font-weight:500;font-size:.9rem;">Contact</a>
-                <a href="{{ route('service_user_login') }}" class="btn btn-sm" style="background:var(--theme-color);color:#fff;border-radius:6px;padding:.35rem .9rem;">Login</a>
+                <a href="{{ route('landingpage') }}" class="btn btn-sm" style="background:var(--theme-color);color:#fff;border-radius:6px;padding:.35rem .9rem;">Login</a>
             </nav>
         </div>
     </div>

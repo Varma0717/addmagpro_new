@@ -1,12 +1,11 @@
 class AppConfig {
   static const String appName = 'AddMagPro';
 
-  // Development: Use localhost
-  // Production: Use live server
-  static const bool isDevelopment = true;
+  // Production: Use live server only
+  static const bool isDevelopment = false;
 
   static const String apiBaseUrl = isDevelopment
-      ? 'http://localhost:8000/api/v1' // Development: localhost, Production: live server
+      ? 'http://localhost:8000/api/v1' // Development: localhost (DISABLED)
       : 'https://addmagpro.pmratnam.com/api/v1';
 
   static const String baseUrl = isDevelopment

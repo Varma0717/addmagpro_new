@@ -111,7 +111,7 @@
             <li><a href="{{ route('user_wallet') }}">Wallet</a></li>
             <li><a href="{{ route('my_commission') }}">Commission</a></li>
             @else
-            <li><a href="{{ route('service_user_login') }}">Log In</a></li>
+            <li><a href="{{ route('landingpage') }}">Log In</a></li>
             <li><a href="{{ route('service_user_registration') }}">Register</a></li>
             @endif
           </ul>

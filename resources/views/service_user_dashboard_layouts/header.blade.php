@@ -97,7 +97,7 @@
         <li><a href="{{ route('user_dashboard') }}">My Account</a></li>
         <li><a href="{{ route('service_user_logout') }}">Logout</a></li>
         @else
-        <li><a href="{{ route('service_user_login') }}" class="login-btn">Log In</a></li>
+        <li><a href="{{ route('landingpage') }}" class="login-btn">Log In</a></li>
         <li><a href="{{ route('service_user_registration') }}">Register</a></li>
         @endif
         <li><a href="{{ route('contact_us') }}">Contact Us</a></li>
@@ -164,7 +164,7 @@
             <li><a href="{{ route('service_user_logout') }}" class="text-danger">Logout</a></li>
             @else
             <li>
-              <a href="{{ route('service_user_login') }}" class="btn login-btn">Log In</a>
+              <a href="{{ route('landingpage') }}" class="btn login-btn">Log In</a>
             </li>
             <li>
               <span>New here?</span>
@@ -245,7 +245,7 @@
               </li>
               @else
               <li class="nav-item">
-                <a class="nav-link" href="{{ route('service_user_login') }}">Log In / Register</a>
+                <a class="nav-link" href="{{ route('landingpage') }}">Log In / Register</a>
               </li>
               @endif
               <li class="nav-item">

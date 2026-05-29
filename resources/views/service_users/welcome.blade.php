@@ -211,7 +211,7 @@
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
-                <a href="{{ route('cart.new') }}" class="feature-card">
+                <a href="{{ route('cart') }}" class="feature-card">
                     <div class="feature-card-icon">
                         <i class="ri-shopping-cart-line"></i>
                     </div>
@@ -244,7 +244,7 @@
                 </a>
             </div>
             <div class="col-6 col-md-4 col-lg-2">
-                <a href="{{ route('wallet.new') }}" class="feature-card">
+                <a href="{{ route('user_wallet') }}" class="feature-card">
                     <div class="feature-card-icon">
                         <i class="ri-wallet-line"></i>
                     </div>
@@ -724,7 +724,7 @@
             <div class="d-flex gap-3 justify-content-center flex-wrap">
                 @if(!session('service_user_id'))
                 <a href="{{ route('service_user_registration') }}" class="btn btn-light fw-bold" style="color:var(--theme-color);">Register Now</a>
-                <a href="{{ route('service_user_login') }}" class="btn btn-outline-light fw-bold">Sign In</a>
+                <a href="{{ route('landingpage') }}" class="btn btn-outline-light fw-bold">Sign In</a>
                 @else
                 <a href="{{ route('team_details') }}" class="btn btn-light fw-bold" style="color:var(--theme-color);">Refer &amp; Earn</a>
                 <a href="{{ route('products_list') }}" class="btn btn-outline-light fw-bold">Shop Now</a>
