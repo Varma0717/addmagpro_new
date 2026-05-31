@@ -67,9 +67,11 @@ class ProductApiController extends Controller
 
             $products = $query->paginate($perPage);
 
-            collect($products->items())->transform(function ($product) {
+            // Transform products using formatProductResponse
+            $transformedProducts = collect($products->items())->map(function ($product) {
                 return $this->formatProductResponse($product);
             });
+            $products->setCollection($transformedProducts);
 
             return $this->paginatedResponse($products, 'Products retrieved');
         } catch (\Exception $e) {
@@ -194,9 +196,11 @@ class ProductApiController extends Controller
 
             $products = $query->paginate($perPage);
 
-            collect($products->items())->transform(function ($product) {
+            // Transform products using formatProductResponse
+            $transformedProducts = collect($products->items())->map(function ($product) {
                 return $this->formatProductResponse($product);
             });
+            $products->setCollection($transformedProducts);
 
             return $this->paginatedResponse($products, 'Category products retrieved');
         } catch (\Exception $e) {
@@ -232,9 +236,11 @@ class ProductApiController extends Controller
                 ->latest()
                 ->paginate($perPage);
 
-            collect($products->items())->transform(function ($product) {
+            // Transform products using formatProductResponse
+            $transformedProducts = collect($products->items())->map(function ($product) {
                 return $this->formatProductResponse($product);
             });
+            $products->setCollection($transformedProducts);
 
             return $this->paginatedResponse($products, 'Search results retrieved');
         } catch (\Exception $e) {
@@ -320,9 +326,9 @@ class ProductApiController extends Controller
         try {
             $primaryImage = $product->images()->first();
             if ($primaryImage) {
-                $imageUrl = $primaryImage->image_url ?? 
-                           $primaryImage->image_path ?? 
-                           $primaryImage->url ?? null;
+                $imageUrl = $primaryImage->image_url ??
+                    $primaryImage->image_path ??
+                    $primaryImage->url ?? null;
             }
         } catch (\Exception $e) {
             // product_images table might not exist, use legacy column
