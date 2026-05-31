@@ -196,11 +196,20 @@
 <script>
     // Configuration
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const MIN_TOPUP = {{ $min_topup }};
-    const MAX_TOPUP = {{ $max_topup }};
+    const MIN_TOPUP = {
+        {
+            $min_topup
+        }
+    };
+    const MAX_TOPUP = {
+        {
+            $max_topup
+        }
+    };
+    const authToken = '{{ $token }}'; // Server-provided Sanctum token
 
     // Helper functions
-    const getAuthToken = () => localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '';
+    const getAuthToken = () => authToken;
 
     const clearMessages = () => {
         const errorEl = document.getElementById('errorMessage');
@@ -258,13 +267,6 @@
                 return;
             }
 
-            const authToken = getAuthToken();
-            if (!authToken) {
-                showError('Authentication required. Please login again.');
-                setTimeout(() => window.location.href = '/index', 2000);
-                return;
-            }
-
             setLoading(true);
 
             // Create payment order
@@ -299,7 +301,7 @@
                 theme: {
                     color: getComputedStyle(document.documentElement).getPropertyValue('--theme-color').trim()
                 },
-                handler: (response) => verifyPayment(response, authToken, numAmount),
+                handler: (response) => verifyPayment(response, numAmount),
                 modal: {
                     ondismiss: () => {
                         setLoading(false);
@@ -319,7 +321,7 @@
     }
 
     // Verify payment
-    async function verifyPayment(response, authToken, amount) {
+    async function verifyPayment(response, amount) {
         try {
             setLoading(true);
 

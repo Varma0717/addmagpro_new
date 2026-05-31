@@ -1581,9 +1581,19 @@ class ServiceController extends Controller
         if (!$user_id) {
             return redirect()->route('service_user_login');
         }
+
+        // Get service user and generate Sanctum token for API authentication
+        $user = ServiceUser::find($user_id);
+        if (!$user) {
+            return redirect()->route('service_user_login');
+        }
+
+        // Generate a Sanctum token for API access
+        $token = $user->createToken('wallet-topup')->plainTextToken;
+
         $min_topup = config('wallet.min_topup', 100);
         $max_topup = config('wallet.max_topup', 100000);
-        return view('service_users.wallet_topup', compact('min_topup', 'max_topup'));
+        return view('service_users.wallet_topup', compact('min_topup', 'max_topup', 'token'));
     }
 
     public function filter_products(Request $req)
