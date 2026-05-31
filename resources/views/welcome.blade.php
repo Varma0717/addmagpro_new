@@ -23,7 +23,7 @@
 
     <!-- Styles -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{{asset('assets/css/bootstrap.min.css')}}" rel="stylesheet">
     <link href="{{asset('assets/css/fontawesome-all.min.css')}}" rel="stylesheet">
     <link href="{{asset('assets/css/swiper.css')}}" rel="stylesheet">
     <link href="{{asset('assets/css/styles.css')}}" rel="stylesheet">

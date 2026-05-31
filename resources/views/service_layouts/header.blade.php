@@ -9,8 +9,9 @@
   <link rel="icon" href="{{asset('assets/user_assets/images/favicon-32x32.webp')}}" type="image/webp" />
 
   <!-- CSS files -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="{{asset('assets/user_assets/css/bootstrap.min.css')}}" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
   <!-- Plugins -->
   <link rel="stylesheet" type="text/css" href="{{asset('assets/user_assets/plugins/slick/slick.css')}}" />
   <link rel="stylesheet" type="text/css" href="{{asset('assets/user_assets/plugins/slick/slick-theme.css')}}" />
