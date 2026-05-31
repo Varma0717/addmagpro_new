@@ -12,10 +12,10 @@
     <script>
         window.KARTIFY_ASSET_URL = "{{ asset('') }}";
     </script>
+    {{-- Tailwind CSS --}}
+    <script src="https://cdn.tailwindcss.com"></script>
     {{-- Kartify Fonts --}}
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/kartify/fonts/br-hendrix/stylesheet.css') }}">
-    {{-- Bootstrap 5 --}}
-    <link rel="stylesheet" id="rtl-link" type="text/css" href="{{ asset('assets/kartify/css/vendors/bootstrap.css') }}">
     {{-- Iconsax --}}
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/kartify/css/vendors/iconsax.css') }}">
     {{-- Remix Icons --}}
