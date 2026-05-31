@@ -54,6 +54,12 @@ Route::prefix('v1/locations')->group(function () {
     Route::post('detect', [LocationApiController::class, 'detect']);
     Route::post('nearby', [LocationApiController::class, 'nearby']);
     Route::post('save', [LocationApiController::class, 'saveUserLocation'])->middleware('auth:sanctum');
+
+    // Google Maps Integration
+    Route::get('search-places', [LocationApiController::class, 'searchPlaces']);
+    Route::get('place-details', [LocationApiController::class, 'getPlaceDetails']);
+    Route::post('reverse-geocode', [LocationApiController::class, 'reverseGeocode']);
+    Route::post('geocode', [LocationApiController::class, 'geocodeAddress']);
 });
 
 // Home Routes (Public)

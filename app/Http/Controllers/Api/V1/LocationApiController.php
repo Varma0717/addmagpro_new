@@ -4,12 +4,20 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Location;
+use App\Services\GoogleMapsService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
 class LocationApiController extends Controller
 {
     use ApiResponse;
+
+    protected $googleMaps;
+
+    public function __construct(GoogleMapsService $googleMaps)
+    {
+        $this->googleMaps = $googleMaps;
+    }
 
     /**
      * Get all locations
@@ -44,21 +52,99 @@ class LocationApiController extends Controller
     }
 
     /**
-     * Detect location from IP (GeoIP)
+     * Detect location from coordinates using Google Maps
      */
     public function detect(Request $request)
     {
-        // This would integrate with a GeoIP service
-        // For now, return a default location or suggest using browser geolocation
+        $latitude = $request->get('latitude');
+        $longitude = $request->get('longitude');
 
+        if ($latitude && $longitude) {
+            // Use Google Maps reverse geocoding
+            $googleLocation = $this->googleMaps->reverseGeocode($latitude, $longitude);
+            if ($googleLocation) {
+                return $this->successResponse($googleLocation, 'Location detected via Google Maps');
+            }
+        }
+
+        // Fallback: return default location or nearby locations
         return $this->successResponse([
             'detected' => false,
-            'message' => 'Use browser geolocation for accurate results',
+            'message' => 'Unable to detect precise location. Please provide coordinates or select from available locations.',
             'fallback_locations' => Location::where('is_active', true)
-                ->limit(5)
-                ->get(['city', 'state', 'latitude', 'longitude']),
-        ], 'Location detection initialized');
+                ->limit(10)
+                ->get(['id', 'city', 'state', 'latitude', 'longitude']),
+        ], 'Location detection fallback');
     }
+
+    /**
+     * Get place suggestions (autocomplete)
+     */
+    public function searchPlaces(Request $request)
+    {
+        $input = $request->get('q');
+        if (!$input || strlen($input) < 2) {
+            return $this->errorResponse('Search query must be at least 2 characters', [], 400);
+        }
+
+        $suggestions = $this->googleMaps->getPlaceSuggestions($input);
+        return $this->successResponse($suggestions, 'Place suggestions retrieved');
+    }
+
+    /**
+     * Get place details from Google Maps
+     */
+    public function getPlaceDetails(Request $request)
+    {
+        $placeId = $request->get('place_id');
+        if (!$placeId) {
+            return $this->errorResponse('Place ID is required', [], 400);
+        }
+
+        $details = $this->googleMaps->getPlaceDetails($placeId);
+        if (!$details) {
+            return $this->errorResponse('Unable to fetch place details', [], 404);
+        }
+
+        return $this->successResponse($details, 'Place details retrieved');
+    }
+
+    /**
+     * Reverse geocode coordinates to get address
+     */
+    public function reverseGeocode(Request $request)
+    {
+        $latitude = $request->get('latitude');
+        $longitude = $request->get('longitude');
+
+        if (!$latitude || !$longitude) {
+            return $this->errorResponse('Latitude and longitude are required', [], 400);
+        }
+
+        $location = $this->googleMaps->reverseGeocode($latitude, $longitude);
+        if (!$location) {
+            return $this->errorResponse('Unable to reverse geocode location', [], 404);
+        }
+
+        return $this->successResponse($location, 'Address retrieved via reverse geocoding');
+    }
+
+    /**
+     * Geocode address to coordinates
+     */
+    public function geocodeAddress(Request $request)
+    {
+        $address = $request->get('address');
+        if (!$address) {
+            return $this->errorResponse('Address is required', [], 400);
+        }
+
+        $location = $this->googleMaps->geocode($address);
+        if (!$location) {
+            return $this->errorResponse('Unable to geocode address', [], 404);
+        }
+
+        return $this->successResponse($location, 'Coordinates retrieved for address');
 
     /**
      * Save user's location
