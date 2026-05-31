@@ -196,16 +196,8 @@
 <script>
     // Configuration
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const MIN_TOPUP = {
-        {
-            $min_topup
-        }
-    };
-    const MAX_TOPUP = {
-        {
-            $max_topup
-        }
-    };
+    const MIN_TOPUP = {{ $min_topup }};
+    const MAX_TOPUP = {{ $max_topup }};
 
     // Helper functions
     const getAuthToken = () => localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '';
