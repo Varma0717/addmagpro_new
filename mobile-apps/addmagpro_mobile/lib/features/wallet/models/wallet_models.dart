@@ -22,10 +22,11 @@ class WalletOverview {
           .whereType<Map<String, dynamic>>()
           .map(WalletTransactionItem.fromJson)
           .toList(),
-      withdrawRequests: (json['recent_withdraw_requests'] as List<dynamic>? ?? <dynamic>[])
-          .whereType<Map<String, dynamic>>()
-          .map(WithdrawRequestItem.fromJson)
-          .toList(),
+      withdrawRequests:
+          (json['recent_withdraw_requests'] as List<dynamic>? ?? <dynamic>[])
+              .whereType<Map<String, dynamic>>()
+              .map(WithdrawRequestItem.fromJson)
+              .toList(),
     );
   }
 }
@@ -108,10 +109,14 @@ class WalletTopupOrder {
 
   factory WalletTopupOrder.fromJson(Map<String, dynamic> json) {
     return WalletTopupOrder(
-      orderId: json['order_id'] as String? ?? '',
+      orderId:
+          (json['order_id'] as String?) ?? (json['orderId'] as String?) ?? '',
       amount: (json['amount'] as num?)?.toInt() ?? 0,
       currency: json['currency'] as String? ?? 'INR',
-      keyId: json['key_id'] as String? ?? '',
+      keyId:
+          (json['key_id'] as String?) ??
+          (json['razorpay_key'] as String?) ??
+          '',
     );
   }
 }

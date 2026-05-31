@@ -42,7 +42,10 @@ class _WalletScreenState extends State<WalletScreen> {
   }
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final wallet = await _repository.fetch(widget.token);
       if (!mounted) return;
@@ -67,11 +70,17 @@ class _WalletScreenState extends State<WalletScreen> {
       await _load();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('₹${_pendingTopupAmount ?? 0} added to wallet!'), behavior: SnackBarBehavior.floating, backgroundColor: AppColors.success),
+        SnackBar(
+          content: Text('₹${_pendingTopupAmount ?? 0} added to wallet!'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.success,
+        ),
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Verification failed: $error')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Verification failed: $error')));
     }
     _pendingTopupAmount = null;
   }
@@ -80,7 +89,10 @@ class _WalletScreenState extends State<WalletScreen> {
     _pendingTopupAmount = null;
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Payment failed: ${response.message ?? 'Unknown error'}'), backgroundColor: AppColors.error),
+      SnackBar(
+        content: Text('Payment failed: ${response.message ?? 'Unknown error'}'),
+        backgroundColor: AppColors.error,
+      ),
     );
   }
 
@@ -90,32 +102,63 @@ class _WalletScreenState extends State<WalletScreen> {
     final amount = await showModalBottomSheet<double>(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
         return Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 24),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)))),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
-              const Text('Withdraw Request', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const Text(
+                'Withdraw Request',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 16),
               TextField(
                 controller: controller,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(labelText: 'Amount (₹)', prefixIcon: Icon(Icons.currency_rupee_rounded)),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Amount (₹)',
+                  prefixIcon: Icon(Icons.currency_rupee_rounded),
+                ),
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: remarksController,
-                decoration: const InputDecoration(labelText: 'Remarks (optional)', prefixIcon: Icon(Icons.notes_rounded)),
+                decoration: const InputDecoration(
+                  labelText: 'Remarks (optional)',
+                  prefixIcon: Icon(Icons.notes_rounded),
+                ),
               ),
               const SizedBox(height: 20),
               FilledButton(
-                onPressed: () => Navigator.of(context).pop(double.tryParse(controller.text.trim())),
-                style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 52)),
+                onPressed: () => Navigator.of(
+                  context,
+                ).pop(double.tryParse(controller.text.trim())),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 52),
+                ),
                 child: const Text('Submit Withdraw'),
               ),
             ],
@@ -126,17 +169,30 @@ class _WalletScreenState extends State<WalletScreen> {
 
     if (amount == null) return;
 
-    setState(() { _submitting = true; _error = null; });
+    setState(() {
+      _submitting = true;
+      _error = null;
+    });
     try {
-      await _repository.submitWithdraw(widget.token, amount: amount, remarks: remarksController.text.trim());
+      await _repository.submitWithdraw(
+        widget.token,
+        amount: amount,
+        remarks: remarksController.text.trim(),
+      );
       await _load();
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Withdraw request submitted'), behavior: SnackBarBehavior.floating, backgroundColor: AppColors.success),
+        const SnackBar(
+          content: Text('Withdraw request submitted'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.success,
+        ),
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -147,43 +203,88 @@ class _WalletScreenState extends State<WalletScreen> {
     final customController = TextEditingController();
     final amount = await showModalBottomSheet<int>(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
         return Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 24),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            20,
+            20,
+            MediaQuery.of(context).viewInsets.bottom + 24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.border, borderRadius: BorderRadius.circular(2)))),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.border,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
-              const Text('Top Up Wallet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+              const Text(
+                'Top Up Wallet',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+              ),
               const SizedBox(height: 6),
-              const Text('Select an amount or enter custom', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
+              const Text(
+                'Select an amount or enter custom',
+                style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+              ),
               const SizedBox(height: 18),
               Wrap(
                 spacing: 10,
                 runSpacing: 10,
-                children: presets.map((amt) => OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(amt),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    side: const BorderSide(color: AppColors.primary),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: Text('₹$amt', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: AppColors.primary)),
-                )).toList(),
+                children: presets
+                    .map(
+                      (amt) => OutlinedButton(
+                        onPressed: () => Navigator.of(context).pop(amt),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          side: const BorderSide(color: AppColors.primary),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: Text(
+                          '₹$amt',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
               const SizedBox(height: 16),
               TextField(
                 controller: customController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Custom amount (₹)', prefixIcon: Icon(Icons.edit_rounded)),
+                decoration: const InputDecoration(
+                  labelText: 'Custom amount (₹)',
+                  prefixIcon: Icon(Icons.edit_rounded),
+                ),
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: () => Navigator.of(context).pop(int.tryParse(customController.text.trim())),
-                style: FilledButton.styleFrom(minimumSize: const Size(double.infinity, 52)),
+                onPressed: () => Navigator.of(
+                  context,
+                ).pop(int.tryParse(customController.text.trim())),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 52),
+                ),
                 child: const Text('Proceed to Pay'),
               ),
             ],
@@ -196,10 +297,13 @@ class _WalletScreenState extends State<WalletScreen> {
 
     try {
       _pendingTopupAmount = amount;
-      final order = await _repository.createTopupOrder(widget.token, amount: amount);
+      final order = await _repository.createTopupOrder(
+        widget.token,
+        amount: amount,
+      );
       final options = <String, dynamic>{
         'key': order.keyId,
-        'amount': order.amount,
+        'amount': order.amount * 100,
         'currency': order.currency,
         'order_id': order.orderId,
         'name': 'AddMagPro',
@@ -210,16 +314,22 @@ class _WalletScreenState extends State<WalletScreen> {
     } catch (error) {
       _pendingTopupAmount = null;
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error.toString())));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.toString())));
     }
   }
 
   double _totalCredits(WalletOverview wallet) {
-    return wallet.transactions.where((t) => t.isCredit).fold(0.0, (sum, t) => sum + t.amount);
+    return wallet.transactions
+        .where((t) => t.isCredit)
+        .fold(0.0, (sum, t) => sum + t.amount);
   }
 
   double _totalDebits(WalletOverview wallet) {
-    return wallet.transactions.where((t) => !t.isCredit).fold(0.0, (sum, t) => sum + t.amount);
+    return wallet.transactions
+        .where((t) => !t.isCredit)
+        .fold(0.0, (sum, t) => sum + t.amount);
   }
 
   @override
@@ -232,22 +342,40 @@ class _WalletScreenState extends State<WalletScreen> {
 
   Widget _buildBody() {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
     }
 
     if (_error != null) {
-      return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.textMuted),
-        const SizedBox(height: 12),
-        Text(_error!, style: const TextStyle(color: AppColors.textMuted), textAlign: TextAlign.center),
-        const SizedBox(height: 12),
-        FilledButton.tonal(onPressed: _load, child: const Text('Retry')),
-      ]));
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppColors.textMuted,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _error!,
+              style: const TextStyle(color: AppColors.textMuted),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            FilledButton.tonal(onPressed: _load, child: const Text('Retry')),
+          ],
+        ),
+      );
     }
 
     final wallet = _wallet;
     if (wallet == null) {
-      return const EmptyState(icon: Icons.account_balance_wallet_outlined, title: 'Wallet unavailable');
+      return const EmptyState(
+        icon: Icons.account_balance_wallet_outlined,
+        title: 'Wallet unavailable',
+      );
     }
 
     return RefreshIndicator(
@@ -262,7 +390,13 @@ class _WalletScreenState extends State<WalletScreen> {
             decoration: BoxDecoration(
               gradient: AppColors.primaryGradient,
               borderRadius: BorderRadius.circular(24),
-              boxShadow: [BoxShadow(color: AppColors.primary.withAlpha(40), blurRadius: 16, offset: const Offset(0, 6))],
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withAlpha(40),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,35 +406,79 @@ class _WalletScreenState extends State<WalletScreen> {
                     Container(
                       width: 42,
                       height: 42,
-                      decoration: BoxDecoration(color: Colors.white.withAlpha(25), borderRadius: BorderRadius.circular(12)),
-                      child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 22),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(25),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.account_balance_wallet_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                     ),
                     const SizedBox(width: 12),
-                    const Text('Available Balance', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                    const Text(
+                      'Available Balance',
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.white.withAlpha(20), borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withAlpha(20),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.verified_rounded, color: Colors.greenAccent, size: 14),
+                          Icon(
+                            Icons.verified_rounded,
+                            color: Colors.greenAccent,
+                            size: 14,
+                          ),
                           SizedBox(width: 4),
-                          Text('Active', style: TextStyle(color: Colors.greenAccent, fontSize: 11, fontWeight: FontWeight.w600)),
+                          Text(
+                            'Active',
+                            style: TextStyle(
+                              color: Colors.greenAccent,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-                Text('₹${wallet.balance.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 38)),
+                Text(
+                  '₹${wallet.balance.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 38,
+                  ),
+                ),
                 const SizedBox(height: 16),
                 // Quick stats
                 Row(
                   children: [
-                    _BalanceStat(label: 'Credited', value: '₹${_totalCredits(wallet).toStringAsFixed(0)}', icon: Icons.south_west_rounded, iconColor: Colors.greenAccent),
+                    _BalanceStat(
+                      label: 'Credited',
+                      value: '₹${_totalCredits(wallet).toStringAsFixed(0)}',
+                      icon: Icons.south_west_rounded,
+                      iconColor: Colors.greenAccent,
+                    ),
                     const SizedBox(width: 16),
-                    _BalanceStat(label: 'Debited', value: '₹${_totalDebits(wallet).toStringAsFixed(0)}', icon: Icons.north_east_rounded, iconColor: Colors.redAccent),
+                    _BalanceStat(
+                      label: 'Debited',
+                      value: '₹${_totalDebits(wallet).toStringAsFixed(0)}',
+                      icon: Icons.north_east_rounded,
+                      iconColor: Colors.redAccent,
+                    ),
                   ],
                 ),
               ],
@@ -320,7 +498,9 @@ class _WalletScreenState extends State<WalletScreen> {
                     minimumSize: const Size(0, 52),
                     side: const BorderSide(color: AppColors.primary),
                     foregroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),
@@ -332,7 +512,9 @@ class _WalletScreenState extends State<WalletScreen> {
                   label: Text(_submitting ? 'Submitting...' : 'Withdraw'),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(0, 52),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),
@@ -344,7 +526,15 @@ class _WalletScreenState extends State<WalletScreen> {
           SectionHeader(title: 'Recent Transactions', padding: EdgeInsets.zero),
           const SizedBox(height: 12),
           if (wallet.transactions.isEmpty)
-            const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Center(child: Text('No transactions yet', style: TextStyle(color: AppColors.textMuted))))
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No transactions yet',
+                  style: TextStyle(color: AppColors.textMuted),
+                ),
+              ),
+            )
           else
             ...wallet.transactions.map((t) => _WalletTransactionCard(item: t)),
           const SizedBox(height: 20),
@@ -353,7 +543,15 @@ class _WalletScreenState extends State<WalletScreen> {
           SectionHeader(title: 'Withdraw Requests', padding: EdgeInsets.zero),
           const SizedBox(height: 12),
           if (wallet.withdrawRequests.isEmpty)
-            const Padding(padding: EdgeInsets.symmetric(vertical: 24), child: Center(child: Text('No withdraw requests yet', style: TextStyle(color: AppColors.textMuted))))
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No withdraw requests yet',
+                  style: TextStyle(color: AppColors.textMuted),
+                ),
+              ),
+            )
           else
             ...wallet.withdrawRequests.map((w) => _WithdrawCard(item: w)),
           const SizedBox(height: 16),
@@ -384,11 +582,15 @@ class _WalletTransactionCard extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: item.isCredit ? const Color(0xFFECFDF3) : const Color(0xFFFEF3F2),
+              color: item.isCredit
+                  ? const Color(0xFFECFDF3)
+                  : const Color(0xFFFEF3F2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              item.isCredit ? Icons.south_west_rounded : Icons.north_east_rounded,
+              item.isCredit
+                  ? Icons.south_west_rounded
+                  : Icons.north_east_rounded,
               color: item.isCredit ? AppColors.success : AppColors.error,
               size: 20,
             ),
@@ -398,15 +600,32 @@ class _WalletTransactionCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.description, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.textPrimary)),
+                Text(
+                  item.description,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 3),
-                Text(_formatDate(item.createdAt), style: const TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                Text(
+                  _formatDate(item.createdAt),
+                  style: const TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
               ],
             ),
           ),
           Text(
             '${item.isCredit ? '+' : '-'}₹${item.amount.toStringAsFixed(0)}',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: item.isCredit ? AppColors.success : AppColors.error),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+              color: item.isCredit ? AppColors.success : AppColors.error,
+            ),
           ),
         ],
       ),
@@ -441,9 +660,22 @@ class _WithdrawCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.requestNo, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.textPrimary)),
+                Text(
+                  item.requestNo,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 3),
-                Text('₹${item.amount.toStringAsFixed(0)}', style: const TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w700)),
+                Text(
+                  '₹${item.amount.toStringAsFixed(0)}',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ),
@@ -455,7 +687,12 @@ class _WithdrawCard extends StatelessWidget {
 }
 
 class _BalanceStat extends StatelessWidget {
-  const _BalanceStat({required this.label, required this.value, required this.icon, required this.iconColor});
+  const _BalanceStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.iconColor,
+  });
   final String label;
   final String value;
   final IconData icon;
@@ -477,8 +714,18 @@ class _BalanceStat extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: Colors.white60, fontSize: 11)),
-                Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
+                Text(
+                  label,
+                  style: const TextStyle(color: Colors.white60, fontSize: 11),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ],
