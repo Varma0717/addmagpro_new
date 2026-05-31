@@ -290,7 +290,7 @@
             if (!authToken) {
                 showError('Authentication required. Please login again.');
                 setTimeout(() => {
-                    window.location.href = '{{ route("service_user_login") }}';
+                    window.location.href = '/index';
                 }, 2000);
                 return;
             }
