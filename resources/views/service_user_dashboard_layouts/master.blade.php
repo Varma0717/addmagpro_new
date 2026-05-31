@@ -161,21 +161,6 @@
 
 <body class="base-bg-color">
 
-    {{-- Page Loader --}}
-    <div class="preloader">
-        <div class="progress-container">
-            <div class="progress-bar preloader-progress-bar"></div>
-        </div>
-        <div class="text-container">
-            <div class="loading-text initial">Loading</div>
-            <div class="loading-text complete">
-                <span>Welcome</span>
-                <span>AddMagPro</span>
-            </div>
-        </div>
-        <div class="percentage">0</div>
-    </div>
-
     @include('service_user_dashboard_layouts.header')
 
     @yield('mainsection')
@@ -188,9 +173,6 @@
     <script src="{{ asset('assets/kartify/js/iconsax.js') }}"></script>
     {{-- Lazyload (removes initial image blur) --}}
     <script src="{{ asset('assets/kartify/js/lazyload.js') }}"></script>
-    {{-- GSAP + SplitType (required for page loader) --}}
-    <script src="{{ asset('assets/kartify/js/gsap/gsap.min.js') }}"></script>
-    <script src="{{ asset('assets/kartify/js/gsap/split-type.js') }}"></script>
     {{-- Kartify Scripts --}}
     <script src="{{ asset('assets/kartify/js/script.js') }}"></script>
     @yield('extra_js')
