@@ -41,6 +41,22 @@ class Product extends Model
     }
 
     /**
+     * Get all images for this product.
+     */
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProductImage::class, 'product_id', 'product_id');
+    }
+
+    /**
+     * Get all reviews for this product.
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ProductReview::class, 'product_id', 'product_id');
+    }
+
+    /**
      * Get the product images (legacy: stored in product_images column as path)
      */
     public function getImageUrlAttribute(): ?string

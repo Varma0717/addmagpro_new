@@ -315,9 +315,18 @@ class ProductApiController extends Controller
      */
     private function formatProductResponse(Product $product): array
     {
-        // Get primary image
+        // Get primary image - try multiple possible column names
+        $imageUrl = null;
         $primaryImage = $product->images()->first();
-        $imageUrl = $primaryImage ? $primaryImage->image_path : null;
+        if ($primaryImage) {
+            // Try common column names for image URL
+            $imageUrl = $primaryImage->image_url ??
+                $primaryImage->image_path ??
+                $primaryImage->url ?? null;
+        } else {
+            // Fallback to legacy product_images column
+            $imageUrl = $product->product_images ?? null;
+        }
 
         // Calculate effective price (with discount if any)
         $effectivePrice = (float) $product->unit_price;
@@ -342,7 +351,7 @@ class ProductApiController extends Controller
             'category_id' => $product->category_id,
             'vendor_id' => $product->vendor_id,
             'brand_id' => $product->brand_id,
-            'brand_name' => $product->brand?->name ?? null,
+            'brand_name' => $product->brand_id ? 'Brand ' . $product->brand_id : null,
             'item_code' => $product->item_code,
             'price' => (float) $product->unit_price,
             'effective_price' => round($effectivePrice, 2),
