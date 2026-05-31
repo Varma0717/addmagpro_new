@@ -32,7 +32,13 @@ return [
     ],
 
     'razorpay' => [
-        'key' => env('RAZORPAY_KEY_ID'),
-        'secret' => env('RAZORPAY_KEY_SECRET'),
+        'key' => (function () {
+            $keyId = env('RAZORPAY_KEY_ID', '');
+            return $keyId && ! str_starts_with($keyId, 'YOUR_') ? $keyId : 'rzp_live_ClCu3iwRLchrGu';
+        })(),
+        'secret' => (function () {
+            $keySecret = env('RAZORPAY_KEY_SECRET', '');
+            return $keySecret && ! str_starts_with($keySecret, 'YOUR_') ? $keySecret : 'IPpmfWuwinMDo8rqbKw0Z2TV';
+        })(),
     ],
 ];
