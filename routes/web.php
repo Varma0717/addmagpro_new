@@ -339,6 +339,7 @@ Route::group(['middleware' => ['isServiceLogin']], function () {
     Route::get('vendor_withdraw_amount', [ServiceController::class, 'vendor_withdraw_amount'])->name('vendor_withdraw_amount');
     Route::post('user_withdraw_request', [ServiceController::class, 'user_withdraw_request'])->name('user_withdraw_request');
     Route::get('user_wallet', [ServiceController::class, 'user_wallet'])->name('user_wallet');
+    Route::get('wallet/topup', [ServiceController::class, 'wallet_topup'])->name('wallet_topup');
     Route::post('vendor_withdrawal_request', [ServiceController::class, 'vendor_withdrawal_request'])->name('vendor_withdrawal_request');
     Route::post('filter_products', [ServiceController::class, 'filter_products'])->name('filter_products');
 });

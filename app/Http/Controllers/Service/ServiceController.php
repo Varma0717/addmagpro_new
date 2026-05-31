@@ -1575,6 +1575,17 @@ class ServiceController extends Controller
         return view('service_users.user_wallet', compact('user_back_two_back_amount', 'user_commission_amount', 'user_pool_commission_amount'));
     }
 
+    public function wallet_topup()
+    {
+        $user_id = Session::get('service_user_id');
+        if (!$user_id) {
+            return redirect()->route('service_user_login');
+        }
+        $min_topup = config('wallet.min_topup', 100);
+        $max_topup = config('wallet.max_topup', 100000);
+        return view('service_users.wallet_topup', compact('min_topup', 'max_topup'));
+    }
+
     public function filter_products(Request $req)
     {
         return $req->input();
