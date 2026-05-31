@@ -63,26 +63,7 @@ Route::get('/', function () {
     }
 });
 
-// Product Browsing
-Route::get('/products', function () {
-    $products = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1, [
-        'path' => '/products',
-        'query' => request()->query(),
-    ]);
-    return view('products.index', ['products' => $products]);
-})->name('products.index');
-
-Route::get('/products/{id}', function ($id) {
-    return redirect('/products');
-})->name('product.show');
-
-Route::get('/search', function () {
-    $products = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1, [
-        'path' => '/search',
-        'query' => request()->query(),
-    ]);
-    return view('products.index', ['products' => $products]);
-})->name('search');
+// Product Browsing - Use /products_list instead
 
 // Customer Dashboard Pages (require API auth via localStorage token)
 Route::get('/cart', function () {
