@@ -7,146 +7,187 @@
 * @var \Illuminate\Database\Eloquent\Collection|\App\Models\Product[] $new_products
 */
 @endphp
-<div class="max-w-7xl mx-auto px-4 py-8 pt-12">
-    <!-- Hero Banner -->
-    <section class="mb-12">
-        <div class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg overflow-hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 items-center">
-                <div class="p-8 md:p-12 text-white">
-                    <h1 class="text-4xl md:text-5xl font-bold mb-4">Shop Smart, Save More</h1>
-                    <p class="text-lg opacity-90 mb-6">Discover amazing products at unbeatable prices with verified sellers and secure payments.</p>
-                    <div class="flex gap-4">
-                        <a href="/products" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
-                            Start Shopping
-                        </a>
-                        <a href="/referral" class="bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-800">
-                            Earn Rewards
-                        </a>
-                    </div>
+
+<div class="container-max py-12">
+
+    <!-- HERO SECTION -->
+    <section class="hero section mb-12">
+        <div class="grid grid-cols-1 md:grid-cols-2 items-center gap-8">
+            <div class="hero-content">
+                <h1>Shop Smart, Save More</h1>
+                <p>Discover amazing products at unbeatable prices with verified sellers and secure payments</p>
+                <div class="hero-cta">
+                    <a href="/products" class="btn btn-secondary">
+                        <i class="fas fa-shopping-bag"></i>Start Shopping
+                    </a>
+                    <a href="/referral" class="btn btn-outline">
+                        <i class="fas fa-gift"></i>Earn Rewards
+                    </a>
                 </div>
-                <div class="hidden md:block p-8">
-                    <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=500" alt="Shopping" class="w-full rounded-lg">
-                </div>
+            </div>
+            <div class="hidden md:flex items-center justify-center">
+                <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&h=400&fit=crop" alt="Shopping illustration" class="rounded-2xl shadow-lg" style="max-width: 100%;">
             </div>
         </div>
     </section>
 
-    <!-- Categories -->
-    <section class="mb-12">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Shop by Category</h2>
-            <a href="/products" class="text-blue-600 hover:text-blue-700 text-sm font-semibold">View All</a>
+    <!-- CATEGORIES SECTION -->
+    <section class="section">
+        <div class="section-header">
+            <h2>Shop by Category</h2>
+            <a href="/products" class="text-primary font-semibold hover:text-primary-dark transition">
+                View All <i class="fas fa-arrow-right ml-2"></i>
+            </a>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <a href="/products?category=electronics" class="text-center bg-white p-4 rounded-lg hover:shadow-lg transition-shadow">
-                <div class="text-4xl mb-2"><i class="fas fa-laptop text-blue-600"></i></div>
-                <p class="text-sm font-medium text-gray-700">Electronics</p>
+        <div class="category-grid">
+            <a href="/products?category=electronics" class="category-card">
+                <i class="fas fa-laptop" style="color: #0366d6;"></i>
+                <span class="category-card-name">Electronics</span>
             </a>
-            <a href="/products?category=fashion" class="text-center bg-white p-4 rounded-lg hover:shadow-lg transition-shadow">
-                <div class="text-4xl mb-2"><i class="fas fa-shirt text-purple-600"></i></div>
-                <p class="text-sm font-medium text-gray-700">Fashion</p>
+            <a href="/products?category=fashion" class="category-card">
+                <i class="fas fa-shirt" style="color: #9333ea;"></i>
+                <span class="category-card-name">Fashion</span>
             </a>
-            <a href="/products?category=home" class="text-center bg-white p-4 rounded-lg hover:shadow-lg transition-shadow">
-                <div class="text-4xl mb-2"><i class="fas fa-home text-orange-600"></i></div>
-                <p class="text-sm font-medium text-gray-700">Home</p>
+            <a href="/products?category=home" class="category-card">
+                <i class="fas fa-home" style="color: #f97316;"></i>
+                <span class="category-card-name">Home & Kitchen</span>
             </a>
-            <a href="/products?category=beauty" class="text-center bg-white p-4 rounded-lg hover:shadow-lg transition-shadow">
-                <div class="text-4xl mb-2"><i class="fas fa-spa text-pink-600"></i></div>
-                <p class="text-sm font-medium text-gray-700">Beauty</p>
+            <a href="/products?category=beauty" class="category-card">
+                <i class="fas fa-spa" style="color: #ec4899;"></i>
+                <span class="category-card-name">Beauty</span>
             </a>
-            <a href="/products?category=books" class="text-center bg-white p-4 rounded-lg hover:shadow-lg transition-shadow">
-                <div class="text-4xl mb-2"><i class="fas fa-book text-green-600"></i></div>
-                <p class="text-sm font-medium text-gray-700">Books</p>
+            <a href="/products?category=books" class="category-card">
+                <i class="fas fa-book" style="color: #22c55e;"></i>
+                <span class="category-card-name">Books</span>
             </a>
-            <a href="/products?category=sports" class="text-center bg-white p-4 rounded-lg hover:shadow-lg transition-shadow">
-                <div class="text-4xl mb-2"><i class="fas fa-basketball text-red-600"></i></div>
-                <p class="text-sm font-medium text-gray-700">Sports</p>
+            <a href="/products?category=sports" class="category-card">
+                <i class="fas fa-basketball" style="color: #ef4444;"></i>
+                <span class="category-card-name">Sports</span>
             </a>
         </div>
     </section>
 
-    <!-- Featured Products -->
-    <section class="mb-12">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">Trending Now</h2>
-            <a href="/products?sort=trending" class="text-blue-600 text-sm font-semibold">View All</a>
+    <!-- TRENDING PRODUCTS SECTION -->
+    <section class="section">
+        <div class="section-header">
+            <h2>Trending Now</h2>
+            <a href="/products?sort=trending" class="text-primary font-semibold hover:text-primary-dark transition">
+                View All <i class="fas fa-arrow-right ml-2"></i>
+            </a>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            @forelse($trending_products ?? [] as $product)
-            <a href="/products/{{ $product->id }}" class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow group">
-                <div class="relative overflow-hidden bg-gray-100 aspect-square">
-                    <img src="https://via.placeholder.com/200?text={{ $product->name ?? 'Product' }}" alt="{{ $product->name ?? 'Product' }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
-                    @if($product->discount_percent > 0)
-                    <div class="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-bold">
-                        -{{ (int)$product->discount_percent }}%
-                    </div>
+        @if(count($trending_products ?? []) > 0)
+        <div class="product-grid">
+            @foreach($trending_products as $product)
+            <a href="/products/{{ $product->id }}" class="product-card">
+                <div class="product-image-container">
+                    <img src="https://via.placeholder.com/200?text={{ urlencode($product->name ?? 'Product') }}" alt="{{ $product->name ?? 'Product' }}" class="product-image">
+                    @if(isset($product->discount_percent) && $product->discount_percent > 0)
+                    <div class="product-badge">-{{ (int)$product->discount_percent }}%</div>
                     @endif
                 </div>
-                <div class="p-3">
-                    <h3 class="text-sm font-medium text-gray-900 line-clamp-2">{{ $product->name }}</h3>
-                    <div class="flex justify-between items-end mt-2">
+                <div class="product-info">
+                    <h3 class="product-name">{{ $product->name ?? 'Unnamed Product' }}</h3>
+                    <div class="product-price-container">
                         <div>
-                            <p class="text-lg font-bold text-gray-900">₹{{ (int)($product->final_price ?? $product->price) }}</p>
-                            @if($product->discount_percent > 0)
-                            <p class="text-xs text-gray-500 line-through">₹{{ (int)$product->price }}</p>
+                            <div class="product-price">₹{{ (int)($product->final_price ?? $product->price ?? 0) }}</div>
+                            @if(isset($product->discount_percent) && $product->discount_percent > 0)
+                            <div class="product-original-price">₹{{ (int)($product->price ?? 0) }}</div>
                             @endif
                         </div>
+                        @if(isset($product->rating) && $product->rating > 0)
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <span>{{ number_format($product->rating, 1) }}</span>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </a>
-            @empty
-            <div class="col-span-5 text-center text-gray-500 py-8">
-                <p>No products available</p>
-            </div>
-            @endforelse
+            @endforeach
         </div>
+        @else
+        <div class="text-center py-12">
+            <i class="fas fa-inbox text-4xl text-neutral-300 mb-4"></i>
+            <p class="text-neutral-500 text-lg">No trending products available yet</p>
+        </div>
+        @endif
     </section>
 
-    <!-- Special Offers -->
-    <section class="mb-12">
+    <!-- PROMOTIONAL BANNERS -->
+    <section class="section mb-12">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg p-8 text-white">
-                <h3 class="text-2xl font-bold mb-2">Weekend Flash Sale</h3>
-                <p class="opacity-90 mb-4">Get up to 50% off on selected items</p>
-                <a href="/products?filter=flashsale" class="inline-block bg-white text-purple-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
-                    Shop Now
-                </a>
-            </div>
-            <div class="bg-gradient-to-r from-orange-600 to-orange-800 rounded-lg p-8 text-white">
-                <h3 class="text-2xl font-bold mb-2">Referral Program</h3>
-                <p class="opacity-90 mb-4">Earn rewards by referring friends and family</p>
-                <a href="/referral" class="inline-block bg-white text-orange-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
-                    Learn More
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- New Arrivals -->
-    <section>
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold text-gray-900">New Arrivals</h2>
-            <a href="/products?sort=newest" class="text-blue-600 text-sm font-semibold">View All</a>
-        </div>
-        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            @forelse($new_products ?? [] as $product)
-            <a href="/products/{{ $product->id }}" class="bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow group">
-                <div class="relative overflow-hidden bg-gray-100 aspect-square">
-                    <img src="https://via.placeholder.com/200?text={{ $product->name ?? 'Product' }}" alt="{{ $product->name ?? 'Product' }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
-                    <div class="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold">NEW</div>
-                </div>
-                <div class="p-3">
-                    <h3 class="text-sm font-medium text-gray-900 line-clamp-2">{{ $product->name }}</h3>
-                    <p class="text-lg font-bold text-gray-900 mt-2">₹{{ (int)($product->final_price ?? $product->price) }}</p>
+            <a href="/products?filter=flashsale" class="group block">
+                <div class="bg-gradient-to-r from-purple-600 to-purple-800 rounded-2xl p-12 text-white overflow-hidden relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="relative z-10">
+                        <p class="text-sm font-semibold text-purple-200 mb-2 uppercase tracking-widest">Limited Time Offer</p>
+                        <h3 class="text-4xl font-bold mb-3">Weekend Flash Sale</h3>
+                        <p class="text-lg text-purple-100 mb-6">Get up to 50% off on selected items</p>
+                        <span class="inline-flex items-center gap-2 bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition">
+                            Shop Now <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                    <div class="absolute top-0 right-0 text-purple-700 opacity-10">
+                        <i class="fas fa-shopping-cart text-9xl"></i>
+                    </div>
                 </div>
             </a>
-            @empty
-            <div class="col-span-5 text-center text-gray-500 py-8">
-                <p>No new products</p>
-            </div>
-            @endforelse
+            <a href="/referral" class="group block">
+                <div class="bg-gradient-to-r from-orange-600 to-orange-800 rounded-2xl p-12 text-white overflow-hidden relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="relative z-10">
+                        <p class="text-sm font-semibold text-orange-200 mb-2 uppercase tracking-widest">Earn Passive Income</p>
+                        <h3 class="text-4xl font-bold mb-3">Referral Program</h3>
+                        <p class="text-lg text-orange-100 mb-6">Earn rewards by referring friends and family</p>
+                        <span class="inline-flex items-center gap-2 bg-white text-orange-600 px-6 py-3 rounded-lg font-semibold hover:bg-orange-50 transition">
+                            Learn More <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                    <div class="absolute top-0 right-0 text-orange-700 opacity-10">
+                        <i class="fas fa-gift text-9xl"></i>
+                    </div>
+                </div>
+            </a>
         </div>
+    </section>
+
+    <!-- NEW ARRIVALS SECTION -->
+    <section class="section">
+        <div class="section-header">
+            <h2>New Arrivals</h2>
+            <a href="/products?sort=newest" class="text-primary font-semibold hover:text-primary-dark transition">
+                View All <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+        @if(count($new_products ?? []) > 0)
+        <div class="product-grid">
+            @foreach($new_products as $product)
+            <a href="/products/{{ $product->id }}" class="product-card">
+                <div class="product-image-container">
+                    <img src="https://via.placeholder.com/200?text={{ urlencode($product->name ?? 'Product') }}" alt="{{ $product->name ?? 'Product' }}" class="product-image">
+                    <div class="product-badge" style="background-color: #3b82f6; top: 12px; left: 12px; right: auto;">NEW</div>
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ $product->name ?? 'Unnamed Product' }}</h3>
+                    <div class="product-price-container">
+                        <div class="product-price">₹{{ (int)($product->final_price ?? $product->price ?? 0) }}</div>
+                        @if(isset($product->rating) && $product->rating > 0)
+                        <div class="product-rating">
+                            <i class="fas fa-star"></i>
+                            <span>{{ number_format($product->rating, 1) }}</span>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </a>
+            @endforeach
+        </div>
+        @else
+        <div class="text-center py-12">
+            <i class="fas fa-inbox text-4xl text-neutral-300 mb-4"></i>
+            <p class="text-neutral-500 text-lg">No new products available yet</p>
+        </div>
+        @endif
     </section>
 
 </div>
+
 @endsection
