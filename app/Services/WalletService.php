@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\UserWalletTransaction;
 use App\Exceptions\ApiException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class WalletService
 {
@@ -16,6 +18,8 @@ class WalletService
     {
         try {
             return DB::transaction(function () use ($user, $amount, $referenceId, $metadata) {
+                $this->ensureWalletTransactionsTable();
+
                 $balanceBefore = $user->wallet_balance;
                 $balanceAfter = $balanceBefore + $amount;
 
@@ -53,6 +57,8 @@ class WalletService
 
         try {
             return DB::transaction(function () use ($user, $amount, $orderId, $referenceId) {
+                $this->ensureWalletTransactionsTable();
+
                 $balanceBefore = $user->wallet_balance;
                 $balanceAfter = $balanceBefore - $amount;
 
@@ -93,6 +99,8 @@ class WalletService
 
         try {
             return DB::transaction(function () use ($sender, $receiver, $amount, $description) {
+                $this->ensureWalletTransactionsTable();
+
                 $referenceId = 'TRANSFER_' . uniqid();
 
                 // Deduct from sender
@@ -151,6 +159,8 @@ class WalletService
     {
         try {
             return DB::transaction(function () use ($user, $amount, $orderId, $reason) {
+                $this->ensureWalletTransactionsTable();
+
                 $balanceBefore = $user->wallet_balance;
                 $balanceAfter = $balanceBefore + $amount;
 
@@ -183,6 +193,8 @@ class WalletService
     {
         try {
             return DB::transaction(function () use ($referrer, $referred, $referrerBonus, $referredBonus) {
+                $this->ensureWalletTransactionsTable();
+
                 $refId = 'REF_' . $referred->id . '_' . time();
 
                 // Credit referrer
@@ -256,5 +268,33 @@ class WalletService
         return $user->walletTransactions()
             ->latest()
             ->paginate($perPage);
+    }
+
+    /**
+     * Create wallet transactions table on demand if it is missing.
+     */
+    private function ensureWalletTransactionsTable(): void
+    {
+        if (Schema::hasTable('user_wallet_transactions')) {
+            return;
+        }
+
+        Schema::create('user_wallet_transactions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->string('type', 20);
+            $table->string('transaction_type', 50);
+            $table->decimal('amount', 12, 2);
+            $table->decimal('balance_before', 12, 2)->default(0);
+            $table->decimal('balance_after', 12, 2)->default(0);
+            $table->string('reference_id')->unique();
+            $table->string('status', 20)->default('pending');
+            $table->text('description')->nullable();
+            $table->json('metadata')->nullable();
+            $table->timestamps();
+
+            $table->index(['user_id', 'transaction_type']);
+            $table->index(['user_id', 'status']);
+        });
     }
 }
