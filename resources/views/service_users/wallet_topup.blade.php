@@ -242,7 +242,7 @@
         if (btn) btn.disabled = loading;
     };
 
-    // Main payment function - DEFINED FIRST so it's available globally
+    // Main payment function - defined in global scope
     async function initiateTopup() {
         try {
             clearMessages();
