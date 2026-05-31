@@ -65,7 +65,11 @@ Route::get('/', function () {
 
 // Product Browsing
 Route::get('/products', function () {
-    return view('products.index', ['products' => []]);
+    $products = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1, [
+        'path' => '/products',
+        'query' => request()->query(),
+    ]);
+    return view('products.index', ['products' => $products]);
 })->name('products.index');
 
 Route::get('/products/{id}', function ($id) {
@@ -73,7 +77,11 @@ Route::get('/products/{id}', function ($id) {
 })->name('product.show');
 
 Route::get('/search', function () {
-    return view('products.index', ['products' => []]);
+    $products = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 15, 1, [
+        'path' => '/search',
+        'query' => request()->query(),
+    ]);
+    return view('products.index', ['products' => $products]);
 })->name('search');
 
 // Customer Dashboard Pages (require API auth via localStorage token)
