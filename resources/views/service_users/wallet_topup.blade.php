@@ -242,36 +242,7 @@
         if (btn) btn.disabled = loading;
     };
 
-    // Initialize on DOM ready
-    document.addEventListener('DOMContentLoaded', function() {
-        // Preset button listeners
-        document.querySelectorAll('.preset-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                const input = document.getElementById('customAmount');
-                if (input) input.value = this.dataset.amount;
-                clearMessages();
-            });
-        });
-
-        // Custom amount input listener
-        const customInput = document.getElementById('customAmount');
-        if (customInput) {
-            customInput.addEventListener('input', function() {
-                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-                clearMessages();
-            });
-        }
-
-        // Proceed button listener
-        const proceedBtn = document.getElementById('topupBtn');
-        if (proceedBtn) {
-            proceedBtn.addEventListener('click', initiateTopup);
-        }
-    });
-
-    // Main payment function
+    // Main payment function - DEFINED FIRST so it's available globally
     async function initiateTopup() {
         try {
             clearMessages();
@@ -392,5 +363,34 @@
             showError('Payment verification failed. Please contact support.');
         }
     }
+
+    // Initialize event listeners on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Preset button listeners
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const input = document.getElementById('customAmount');
+                if (input) input.value = this.dataset.amount;
+                clearMessages();
+            });
+        });
+
+        // Custom amount input listener
+        const customInput = document.getElementById('customAmount');
+        if (customInput) {
+            customInput.addEventListener('input', function() {
+                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                clearMessages();
+            });
+        }
+
+        // Proceed button listener - function is now globally available
+        const proceedBtn = document.getElementById('topupBtn');
+        if (proceedBtn) {
+            proceedBtn.addEventListener('click', initiateTopup);
+        }
+    });
 </script>
 @endsection
