@@ -6,7 +6,10 @@
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
-    
-    # Route everything else through index.php
+        # Rewrite requests for assets, css, js, etc. to public folder
+    RewriteCond public/%{REQUEST_URI} -f [OR]
+    RewriteCond public/%{REQUEST_URI} -d
+    RewriteRule ^(.*)$ public/$1 [L]
+        # Route everything else through index.php
     RewriteRule ^ index.php [QSA,L]
 </IfModule>
