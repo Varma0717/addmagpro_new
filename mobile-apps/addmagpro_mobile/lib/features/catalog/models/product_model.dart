@@ -1,3 +1,5 @@
+import '../../../core/config/app_config.dart';
+
 class ProductModel {
   final int id;
   final String name;
@@ -34,6 +36,27 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
+    final rawImages = json['images'];
+
+    final normalizedImages = rawImages is List
+        ? rawImages
+              .map((item) {
+                if (item is String) {
+                  return AppConfig.resolveImageUrl(item);
+                }
+                if (item is Map<String, dynamic>) {
+                  return AppConfig.resolveImageUrl(
+                    item['image_url'] as String? ??
+                        item['url'] as String? ??
+                        item['path'] as String?,
+                  );
+                }
+                return null;
+              })
+              .whereType<String>()
+              .toList(growable: false)
+        : <String>[];
+
     return ProductModel(
       id: json['id'] as int? ?? 0,
       name: json['name'] as String? ?? '',
@@ -42,8 +65,13 @@ class ProductModel {
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       discountPercent: (json['discount_percent'] as num?)?.toDouble(),
       finalPrice: (json['final_price'] as num?)?.toDouble() ?? 0.0,
-      imageUrl: json['image_url'] as String? ?? json['image'] as String?,
-      images: List<String>.from(json['images'] as List? ?? []),
+      imageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String? ??
+            json['image_url'] as String? ??
+            json['product_images'] as String? ??
+            json['image'] as String?,
+      ),
+      images: normalizedImages,
       rating: (json['rating'] as num?)?.toDouble(),
       reviewCount:
           json['review_count'] as int? ?? json['reviews_count'] as int?,

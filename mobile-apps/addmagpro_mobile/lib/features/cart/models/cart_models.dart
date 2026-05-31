@@ -1,3 +1,5 @@
+import '../../../core/config/app_config.dart';
+
 class CartOverview {
   CartOverview({required this.items, required this.summary});
 
@@ -78,8 +80,9 @@ class CartProduct {
           _toDouble(json['price']) ??
           _toDouble(json['final_price']) ??
           0,
-      primaryImageUrl:
-          json['primary_image_url'] as String? ?? json['image_url'] as String?,
+      primaryImageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String? ?? json['image_url'] as String?,
+      ),
     );
   }
 }

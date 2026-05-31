@@ -1,3 +1,5 @@
+import '../../../core/config/app_config.dart';
+
 class ReferralResponse {
   const ReferralResponse({
     required this.referralCode,
@@ -24,7 +26,8 @@ class ReferralResponse {
   final List<LevelSummary> levelSummary;
 
   factory ReferralResponse.fromJson(Map<String, dynamic> json) {
-    final summary = json['summary'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final summary =
+        json['summary'] as Map<String, dynamic>? ?? <String, dynamic>{};
     final share = json['share'] as Map<String, dynamic>? ?? <String, dynamic>{};
     final items = (json['referrals'] as List<dynamic>? ?? <dynamic>[])
         .whereType<Map<String, dynamic>>()
@@ -34,10 +37,11 @@ class ReferralResponse {
         .whereType<Map<String, dynamic>>()
         .map(TeamNode.fromJson)
         .toList();
-    final summaryByLevel = (json['level_summary'] as List<dynamic>? ?? <dynamic>[])
-        .whereType<Map<String, dynamic>>()
-        .map(LevelSummary.fromJson)
-        .toList();
+    final summaryByLevel =
+        (json['level_summary'] as List<dynamic>? ?? <dynamic>[])
+            .whereType<Map<String, dynamic>>()
+            .map(LevelSummary.fromJson)
+            .toList();
 
     return ReferralResponse(
       referralCode: summary['referral_code'] as String? ?? '-',
@@ -182,7 +186,7 @@ class ReferralMember {
       id: (json['id'] as num?)?.toInt(),
       name: json['name'] as String? ?? 'Member',
       phone: json['phone'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
+      avatarUrl: AppConfig.resolveImageUrl(json['avatar_url'] as String?),
       isActive: json['is_active'] as bool? ?? false,
     );
   }
@@ -201,24 +205,29 @@ class TeamStructureSummary {
 
   factory TeamStructureSummary.fromNodes(List<TeamNode> nodes) {
     if (nodes.isEmpty) {
-      return const TeamStructureSummary(totalTeamSize: 0, maxDepth: 0, levels: []);
+      return const TeamStructureSummary(
+        totalTeamSize: 0,
+        maxDepth: 0,
+        levels: [],
+      );
     }
     final grouped = <int, List<TeamNode>>{};
     for (final node in nodes) {
       grouped.putIfAbsent(node.depth, () => <TeamNode>[]).add(node);
     }
-    final levels = grouped.entries
-        .toList()
+    final levels = grouped.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
     return TeamStructureSummary(
       totalTeamSize: nodes.length,
       maxDepth: levels.last.key,
       levels: levels
-          .map((e) => TeamStructureLevel(
-                level: e.key,
-                count: e.value.length,
-                members: e.value.map((n) => n.member).toList(),
-              ))
+          .map(
+            (e) => TeamStructureLevel(
+              level: e.key,
+              count: e.value.length,
+              members: e.value.map((n) => n.member).toList(),
+            ),
+          )
           .toList(),
     );
   }

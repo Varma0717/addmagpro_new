@@ -129,11 +129,18 @@ class ProductListItem {
     final brand = json['brand'];
     return ProductListItem(
       id: _toInt(json['id']) ?? 0,
-      name: (json['name'] as String?) ?? '-',
+      name:
+          (json['name'] as String?) ?? (json['product_name'] as String?) ?? '-',
       slug: (json['slug'] as String?) ?? '',
-      effectivePrice: _toDouble(json['effective_price']) ?? 0,
+      effectivePrice:
+          _toDouble(json['effective_price']) ??
+          _toDouble(json['price']) ??
+          _toDouble(json['unit_price']) ??
+          0,
       primaryImageUrl: AppConfig.resolveImageUrl(
-        json['primary_image_url'] as String?,
+        json['primary_image_url'] as String? ??
+            json['image_url'] as String? ??
+            json['product_images'] as String?,
       ),
       ratingAvg: _toDouble(json['rating_avg']),
       brandId:
@@ -193,33 +200,50 @@ class ProductDetail {
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>? ?? <String, dynamic>{};
-    final images = data['images'];
+    final images = data['images'] ?? data['product_images'];
     final reviews = data['reviews'];
     final category = data['category'];
 
     return ProductDetail(
       id: _toInt(data['id']) ?? 0,
-      name: (data['name'] as String?) ?? '-',
+      name:
+          (data['name'] as String?) ?? (data['product_name'] as String?) ?? '-',
       slug: (data['slug'] as String?) ?? '',
-      description: data['description'] as String?,
+      description:
+          data['description'] as String? ??
+          data['product_description'] as String?,
       shortDescription: data['short_description'] as String?,
       price:
           _toDouble(data['price']) ??
+          _toDouble(data['unit_price']) ??
           _toDouble(data['original_price']) ??
           _toDouble(data['mrp']) ??
           _toDouble(data['effective_price']) ??
           0,
-      effectivePrice: _toDouble(data['effective_price']) ?? 0,
+      effectivePrice:
+          _toDouble(data['effective_price']) ??
+          _toDouble(data['price']) ??
+          _toDouble(data['unit_price']) ??
+          0,
       discountPercent:
           _toDouble(data['discount_percent']) ??
           _toDouble(data['discount_percentage']) ??
           0,
       images: images is List
           ? images
-                .whereType<Map<String, dynamic>>()
-                .map(
-                  (e) => AppConfig.resolveImageUrl(e['image_url'] as String?),
-                )
+                .map((e) {
+                  if (e is String) {
+                    return AppConfig.resolveImageUrl(e);
+                  }
+                  if (e is Map<String, dynamic>) {
+                    return AppConfig.resolveImageUrl(
+                      e['image_url'] as String? ??
+                          e['url'] as String? ??
+                          e['path'] as String?,
+                    );
+                  }
+                  return null;
+                })
                 .whereType<String>()
                 .toList(growable: false)
           : <String>[],
@@ -326,7 +350,7 @@ class ListingListItem {
       city: json['city'] as String?,
       ratingAvg: _toDouble(json['rating_avg']),
       primaryImageUrl: AppConfig.resolveImageUrl(
-        json['primary_image_url'] as String?,
+        json['primary_image_url'] as String? ?? json['image_url'] as String?,
       ),
       categoryName: category is Map<String, dynamic>
           ? category['name'] as String?

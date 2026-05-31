@@ -1,3 +1,5 @@
+import '../../../core/config/app_config.dart';
+
 class AuthUser {
   final int id;
   final String name;
@@ -28,7 +30,7 @@ class AuthUser {
       email: json['email'] as String?,
       phone: json['phone'] as String?,
       referralCode: json['referral_code'] as String?,
-      avatarUrl: json['avatar_url'] as String?,
+      avatarUrl: AppConfig.resolveImageUrl(json['avatar_url'] as String?),
       role: json['role'] as String?,
       isActive: _toBool(json['is_active']) ?? true,
       walletBalance: _toDouble(json['wallet_balance']) ?? 0,

@@ -1,3 +1,5 @@
+import '../../../core/config/app_config.dart';
+
 class CartItemModel {
   final int id;
   final int productId;
@@ -23,8 +25,9 @@ class CartItemModel {
       productId: json['product_id'] as int? ?? 0,
       productName:
           json['product_name'] as String? ?? json['name'] as String? ?? '',
-      productImage:
-          json['product_image'] as String? ?? json['image'] as String?,
+      productImage: AppConfig.resolveImageUrl(
+        json['product_image'] as String? ?? json['image'] as String?,
+      ),
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       finalPrice: (json['final_price'] as num?)?.toDouble() ?? 0.0,
       quantity: json['quantity'] as int? ?? 1,

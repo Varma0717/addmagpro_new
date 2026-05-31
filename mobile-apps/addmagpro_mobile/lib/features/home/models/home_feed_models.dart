@@ -82,10 +82,10 @@ class HomeBannerItem {
     return HomeBannerItem(
       id: _toInt(json['id']) ?? 0,
       title: json['title'] as String?,
-      subtitle: json['subtitle'] as String?,
+      subtitle: json['subtitle'] as String? ?? json['description'] as String?,
       imageUrl: AppConfig.resolveImageUrl(json['image_url'] as String?),
-      linkType: json['link_type'] as String?,
-      linkValue: json['link_value'] as String?,
+      linkType: json['link_type'] as String? ?? json['type'] as String?,
+      linkValue: json['link_value'] as String? ?? json['action_url'] as String?,
     );
   }
 }
@@ -138,13 +138,20 @@ class HomeProductItem {
   factory HomeProductItem.fromJson(Map<String, dynamic> json) {
     return HomeProductItem(
       id: _toInt(json['id']) ?? 0,
-      name: (json['name'] as String?) ?? '-',
+      name:
+          (json['name'] as String?) ?? (json['product_name'] as String?) ?? '-',
       slug: (json['slug'] as String?) ?? '',
-      effectivePrice: _toDouble(json['effective_price']) ?? 0,
+      effectivePrice:
+          _toDouble(json['effective_price']) ??
+          _toDouble(json['price']) ??
+          _toDouble(json['unit_price']) ??
+          0,
       ratingAvg: _toDouble(json['rating_avg']),
-      category: json['category'] as String?,
+      category: json['category'] as String? ?? json['category_name'] as String?,
       primaryImageUrl: AppConfig.resolveImageUrl(
-        json['primary_image_url'] as String?,
+        json['primary_image_url'] as String? ??
+            json['image_url'] as String? ??
+            json['product_images'] as String?,
       ),
     );
   }

@@ -1,3 +1,5 @@
+import '../../../core/config/app_config.dart';
+
 class OrderSummary {
   const OrderSummary({
     required this.id,
@@ -120,10 +122,11 @@ class OrderItemDetail {
           (json['unit_price'] as num?)?.toDouble() ??
           0,
       subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
-      imageUrl:
-          product['primary_image_url'] as String? ??
-          product['image_url'] as String? ??
-          json['image_url'] as String?,
+      imageUrl: AppConfig.resolveImageUrl(
+        product['primary_image_url'] as String? ??
+            product['image_url'] as String? ??
+            json['image_url'] as String?,
+      ),
     );
   }
 }

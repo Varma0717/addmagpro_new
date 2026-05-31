@@ -16,8 +16,17 @@ class AppConfig {
   /// Backend may return relative paths like `/storage/...`.
   static String? resolveImageUrl(String? url) {
     if (url == null || url.isEmpty) return null;
-    if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    if (url.startsWith('/')) return '$baseUrl$url';
-    return '$baseUrl/$url';
+
+    final normalized = url.trim().replaceAll('\\', '/');
+    if (normalized.isEmpty) return null;
+
+    final absolute =
+        (normalized.startsWith('http://') || normalized.startsWith('https://'))
+        ? normalized
+        : (normalized.startsWith('/')
+              ? '$baseUrl$normalized'
+              : '$baseUrl/$normalized');
+
+    return Uri.encodeFull(absolute);
   }
 }

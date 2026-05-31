@@ -1,3 +1,5 @@
+import '../../../core/config/app_config.dart';
+
 class MixedSearchResponse {
   MixedSearchResponse({required this.query, required this.results});
 
@@ -13,9 +15,9 @@ class MixedSearchResponse {
     final mixed = data['mixed'];
     final results = mixed is List
         ? mixed
-            .whereType<Map<String, dynamic>>()
-            .map(MixedSearchItem.fromJson)
-            .toList(growable: false)
+              .whereType<Map<String, dynamic>>()
+              .map(MixedSearchItem.fromJson)
+              .toList(growable: false)
         : <MixedSearchItem>[];
 
     return MixedSearchResponse(
@@ -58,7 +60,9 @@ class MixedSearchItem {
       subtitle: json['subtitle'] as String?,
       city: json['city'] as String?,
       price: _toDouble(json['price']),
-      primaryImageUrl: json['primary_image_url'] as String?,
+      primaryImageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String? ?? json['image_url'] as String?,
+      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+import '../../../core/config/app_config.dart';
+
 class WishlistItem {
   WishlistItem({
     required this.id,
@@ -33,9 +35,11 @@ class WishlistItem {
           (product['final_price'] as num?)?.toDouble() ??
           (product['price'] as num?)?.toDouble() ??
           0,
-      primaryImageUrl:
-          json['primary_image_url'] as String? ??
-          product['image_url'] as String?,
+      primaryImageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String? ??
+            product['primary_image_url'] as String? ??
+            product['image_url'] as String?,
+      ),
       addedAt: json['added_at'] as String?,
     );
   }

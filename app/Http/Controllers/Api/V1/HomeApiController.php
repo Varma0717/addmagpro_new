@@ -11,6 +11,7 @@ use App\Models\Location;
 use App\Models\Coupon;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class HomeApiController extends Controller
 {
@@ -186,6 +187,8 @@ class HomeApiController extends Controller
             collect($products->items())->transform(function ($product) {
                 return $this->formatProductResponse($product);
             });
+
+            return $this->paginatedResponse($products, 'New launches retrieved');
         } catch (\Exception $e) {
             return $this->errorResponse(
                 'Failed to fetch new launches: ' . $e->getMessage(),
@@ -254,17 +257,24 @@ class HomeApiController extends Controller
      */
     private function formatProductResponse(Product $product): array
     {
+        $price = (float) ($product->unit_price ?? 0);
+
         return [
             'id' => $product->product_id,
+            'product_id' => $product->product_id,
             'name' => $product->product_name,
+            'slug' => $product->slug ?? Str::slug((string) $product->product_name),
             'description' => $product->product_description,
             'category_id' => $product->category_id,
             'vendor_id' => $product->vendor_id,
             'brand_id' => $product->brand_id,
             'item_code' => $product->item_code,
-            'price' => (float) $product->unit_price,
+            'price' => $price,
+            'effective_price' => $price,
             'cost_price' => (float) $product->purchase_price,
+            'primary_image_url' => $product->product_images,
             'image_url' => $product->product_images,
+            'rating_avg' => null,
         ];
     }
 }
