@@ -71,6 +71,7 @@ class ProductApiController extends Controller
             $transformedProducts = collect($products->items())->map(function ($product) {
                 return $this->formatProductResponse($product);
             });
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $products */
             $products->setCollection($transformedProducts);
 
             return $this->paginatedResponse($products, 'Products retrieved');
@@ -200,6 +201,7 @@ class ProductApiController extends Controller
             $transformedProducts = collect($products->items())->map(function ($product) {
                 return $this->formatProductResponse($product);
             });
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $products */
             $products->setCollection($transformedProducts);
 
             return $this->paginatedResponse($products, 'Category products retrieved');
@@ -240,6 +242,7 @@ class ProductApiController extends Controller
             $transformedProducts = collect($products->items())->map(function ($product) {
                 return $this->formatProductResponse($product);
             });
+            /** @var \Illuminate\Pagination\LengthAwarePaginator $products */
             $products->setCollection($transformedProducts);
 
             return $this->paginatedResponse($products, 'Search results retrieved');

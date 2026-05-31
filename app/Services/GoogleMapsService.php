@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class GoogleMapsService
 {
@@ -54,7 +55,7 @@ class GoogleMapsService
                 return null;
             });
         } catch (\Exception $e) {
-            \Log::error('Google Geocoding Error: ' . $e->getMessage());
+            Log::error('Google Geocoding Error: ' . $e->getMessage());
             return null;
         }
     }
@@ -97,7 +98,7 @@ class GoogleMapsService
                 return null;
             });
         } catch (\Exception $e) {
-            \Log::error('Google Geocoding Error: ' . $e->getMessage());
+            Log::error('Google Geocoding Error: ' . $e->getMessage());
             return null;
         }
     }
@@ -136,7 +137,7 @@ class GoogleMapsService
             }
             return [];
         } catch (\Exception $e) {
-            \Log::error('Google Places Autocomplete Error: ' . $e->getMessage());
+            Log::error('Google Places Autocomplete Error: ' . $e->getMessage());
             return [];
         }
     }
@@ -178,7 +179,7 @@ class GoogleMapsService
                 return null;
             });
         } catch (\Exception $e) {
-            \Log::error('Google Place Details Error: ' . $e->getMessage());
+            Log::error('Google Place Details Error: ' . $e->getMessage());
             return null;
         }
     }

@@ -145,6 +145,7 @@ class LocationApiController extends Controller
         }
 
         return $this->successResponse($location, 'Coordinates retrieved for address');
+    }
 
     /**
      * Save user's location
