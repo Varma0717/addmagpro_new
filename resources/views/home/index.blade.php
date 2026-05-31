@@ -8,7 +8,7 @@
 */
 @endphp
 
-<div class="container-max py-12">
+<div class="container-max pb-12">
 
     <!-- HERO SECTION -->
     <section class="hero section">
