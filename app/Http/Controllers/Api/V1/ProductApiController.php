@@ -350,6 +350,8 @@ class ProductApiController extends Controller
         } catch (\Exception $e) {
             // product_reviews table might not exist
         }
+
+        return [
             'id' => $product->product_id,
             'product_id' => $product->product_id,
             'name' => $product->product_name,
