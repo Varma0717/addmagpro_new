@@ -160,13 +160,8 @@
 
                     <!-- Custom Amount -->
                     <p class="mb-2" style="font-weight: 600; color: #333;">Or Enter Custom Amount</p>
-                    <input
-                        type="number"
-                        id="customAmount"
-                        class="custom-input"
-                        placeholder="Enter amount (₹)"
-                        min="{{ $min_topup }}"
-                        max="{{ $max_topup }}">
+                    <input type="number" id="customAmount" class="custom-input" placeholder="Enter amount (₹)"
+                        min="{{ $min_topup }}" max="{{ $max_topup }}">
 
                     <!-- Messages -->
                     <div class="error-message" id="errorMessage"></div>
@@ -179,7 +174,7 @@
                     </div>
 
                     <!-- Topup Button -->
-                    <button type="button" class="topup-btn" id="topupBtn" onclick="initiateTopup()">
+                    <button type="button" class="topup-btn" id="topupBtn">
                         <i class="ri-bank-card-line me-2"></i> Proceed to Payment
                     </button>
 
@@ -199,105 +194,117 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-    // Get CSRF token
+    // Configuration
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-
-    // Get auth token from localStorage
-    const getAuthToken = () => {
-        return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '';
+    const MIN_TOPUP = {
+        {
+            $min_topup
+        }
+    };
+    const MAX_TOPUP = {
+        {
+            $max_topup
+        }
     };
 
-    // Preset button handlers
-    document.querySelectorAll('.preset-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            document.getElementById('customAmount').value = this.dataset.amount;
-            clearMessages();
-        });
-    });
+    // Helper functions
+    const getAuthToken = () => localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '';
 
-    // Custom amount input handler
-    document.getElementById('customAmount').addEventListener('input', function() {
-        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-        clearMessages();
-    });
-
-    // Clear messages
-    function clearMessages() {
-        document.getElementById('errorMessage').style.display = 'none';
-        document.getElementById('successMessage').style.display = 'none';
-    }
-
-    // Show error
-    function showError(message) {
-        clearMessages();
+    const clearMessages = () => {
         const errorEl = document.getElementById('errorMessage');
-        errorEl.textContent = message;
-        errorEl.style.display = 'block';
-    }
-
-    // Show success
-    function showSuccess(message) {
-        clearMessages();
         const successEl = document.getElementById('successMessage');
-        successEl.textContent = message;
-        successEl.style.display = 'block';
-    }
+        if (errorEl) errorEl.style.display = 'none';
+        if (successEl) successEl.style.display = 'none';
+    };
 
-    // Set loader state
-    function setLoading(isLoading) {
-        document.getElementById('loader').style.display = isLoading ? 'block' : 'none';
-        document.getElementById('topupBtn').disabled = isLoading;
-    }
+    const showError = (msg) => {
+        clearMessages();
+        const el = document.getElementById('errorMessage');
+        if (el) {
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+    };
 
-    // Initiate topup
+    const showSuccess = (msg) => {
+        clearMessages();
+        const el = document.getElementById('successMessage');
+        if (el) {
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+    };
+
+    const setLoading = (loading) => {
+        const loader = document.getElementById('loader');
+        const btn = document.getElementById('topupBtn');
+        if (loader) loader.style.display = loading ? 'block' : 'none';
+        if (btn) btn.disabled = loading;
+    };
+
+    // Initialize on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        // Preset button listeners
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const input = document.getElementById('customAmount');
+                if (input) input.value = this.dataset.amount;
+                clearMessages();
+            });
+        });
+
+        // Custom amount input listener
+        const customInput = document.getElementById('customAmount');
+        if (customInput) {
+            customInput.addEventListener('input', function() {
+                document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                clearMessages();
+            });
+        }
+
+        // Proceed button listener
+        const proceedBtn = document.getElementById('topupBtn');
+        if (proceedBtn) {
+            proceedBtn.addEventListener('click', initiateTopup);
+        }
+    });
+
+    // Main payment function
     async function initiateTopup() {
         try {
             clearMessages();
 
-            const amount = document.getElementById('customAmount').value;
-            const minTopup = {
-                {
-                    $min_topup
-                }
-            };
-            const maxTopup = {
-                {
-                    $max_topup
-                }
-            };
+            const input = document.getElementById('customAmount');
+            const amount = input?.value || '';
 
-            // Validation
             if (!amount) {
                 showError('Please enter an amount');
                 return;
             }
 
             const numAmount = parseFloat(amount);
-            if (isNaN(numAmount) || numAmount < minTopup) {
-                showError(`Minimum top-up amount is ₹${minTopup}`);
+            if (isNaN(numAmount) || numAmount < MIN_TOPUP) {
+                showError(`Minimum top-up amount is ₹${MIN_TOPUP}`);
                 return;
             }
 
-            if (numAmount > maxTopup) {
-                showError(`Maximum top-up amount is ₹${maxTopup}`);
+            if (numAmount > MAX_TOPUP) {
+                showError(`Maximum top-up amount is ₹${MAX_TOPUP}`);
                 return;
             }
 
-            // Get auth token
             const authToken = getAuthToken();
             if (!authToken) {
                 showError('Authentication required. Please login again.');
-                setTimeout(() => {
-                    window.location.href = '/index';
-                }, 2000);
+                setTimeout(() => window.location.href = '/index', 2000);
                 return;
             }
 
             setLoading(true);
 
-            // Call API to create order
+            // Create payment order
             const response = await fetch('/api/v1/account/wallet/topup/create', {
                 method: 'POST',
                 headers: {
@@ -318,8 +325,8 @@
                 return;
             }
 
-            // Razorpay options
-            const options = {
+            // Open Razorpay
+            const rzp = new Razorpay({
                 key: data.data.keyId,
                 amount: data.data.amount,
                 currency: data.data.currency,
@@ -327,21 +334,17 @@
                 name: 'AddMagPro',
                 description: `Wallet Top-up ₹${numAmount}`,
                 theme: {
-                    color: 'var(--theme-color)'
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--theme-color').trim()
                 },
-                handler: function(response) {
-                    verifyPayment(response, authToken, numAmount);
-                },
+                handler: (response) => verifyPayment(response, authToken, numAmount),
                 modal: {
-                    ondismiss: function() {
+                    ondismiss: () => {
                         setLoading(false);
                         showError('Payment cancelled. Please try again.');
                     }
                 }
-            };
+            });
 
-            // Initialize Razorpay
-            const rzp = new Razorpay(options);
             rzp.open();
             setLoading(false);
 
@@ -381,9 +384,7 @@
             }
 
             showSuccess('✓ Payment successful! Amount added to your wallet.');
-            setTimeout(() => {
-                window.location.href = '{{ route("user_wallet") }}';
-            }, 2000);
+            setTimeout(() => window.location.href = '{{ route("user_wallet") }}', 2000);
 
         } catch (error) {
             setLoading(false);
