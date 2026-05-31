@@ -315,16 +315,21 @@ class ProductApiController extends Controller
      */
     private function formatProductResponse(Product $product): array
     {
-        // Get primary image - try multiple possible column names
+        // Get primary image - safely handle missing product_images table
         $imageUrl = null;
-        $primaryImage = $product->images()->first();
-        if ($primaryImage) {
-            // Try common column names for image URL
-            $imageUrl = $primaryImage->image_url ??
-                $primaryImage->image_path ??
-                $primaryImage->url ?? null;
-        } else {
-            // Fallback to legacy product_images column
+        try {
+            $primaryImage = $product->images()->first();
+            if ($primaryImage) {
+                $imageUrl = $primaryImage->image_url ?? 
+                           $primaryImage->image_path ?? 
+                           $primaryImage->url ?? null;
+            }
+        } catch (\Exception $e) {
+            // product_images table might not exist, use legacy column
+        }
+
+        // Fallback to legacy product_images column
+        if (!$imageUrl) {
             $imageUrl = $product->product_images ?? null;
         }
 
@@ -338,11 +343,13 @@ class ProductApiController extends Controller
             }
         }
 
-        // Get average rating
-        $avgRating = $product->reviews()
-            ->avg('rating');
-
-        return [
+        // Get average rating - safely handle missing product_reviews table
+        $avgRating = null;
+        try {
+            $avgRating = $product->reviews()->avg('rating');
+        } catch (\Exception $e) {
+            // product_reviews table might not exist
+        }
             'id' => $product->product_id,
             'product_id' => $product->product_id,
             'name' => $product->product_name,
