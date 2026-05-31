@@ -42,11 +42,6 @@ class RazorpayService
                 $data['description'] = $description;
             }
 
-            // Add customer info if provided
-            if ($customerEmail || $customerPhone) {
-                $data['customer_notify'] = 1;
-            }
-
             // Add metadata
             if (!empty($metadata)) {
                 $data['notes'] = $metadata;
