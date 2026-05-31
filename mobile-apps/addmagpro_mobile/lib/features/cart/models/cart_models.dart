@@ -13,15 +13,12 @@ class CartOverview {
     final rawItems = data['items'];
     final items = rawItems is List
         ? rawItems
-            .whereType<Map<String, dynamic>>()
-            .map(CartLineItem.fromJson)
-            .toList(growable: false)
+              .whereType<Map<String, dynamic>>()
+              .map(CartLineItem.fromJson)
+              .toList(growable: false)
         : <CartLineItem>[];
 
-    return CartOverview(
-      items: items,
-      summary: CartSummary.fromJson(data['summary'] as Map<String, dynamic>? ?? <String, dynamic>{}),
-    );
+    return CartOverview(items: items, summary: CartSummary.fromJson(data));
   }
 }
 
@@ -30,6 +27,7 @@ class CartLineItem {
     required this.id,
     required this.productId,
     required this.quantity,
+    required this.price,
     required this.subtotal,
     required this.product,
   });
@@ -37,6 +35,7 @@ class CartLineItem {
   final int id;
   final int productId;
   final int quantity;
+  final double price;
   final double subtotal;
   final CartProduct product;
 
@@ -45,8 +44,11 @@ class CartLineItem {
       id: _toInt(json['id']) ?? 0,
       productId: _toInt(json['product_id']) ?? 0,
       quantity: _toInt(json['quantity']) ?? 0,
+      price: _toDouble(json['price']) ?? 0,
       subtotal: _toDouble(json['subtotal']) ?? 0,
-      product: CartProduct.fromJson(json['product'] as Map<String, dynamic>? ?? <String, dynamic>{}),
+      product: CartProduct.fromJson(
+        json['product'] as Map<String, dynamic>? ?? <String, dynamic>{},
+      ),
     );
   }
 }
@@ -71,8 +73,13 @@ class CartProduct {
       id: _toInt(json['id']) ?? 0,
       name: (json['name'] as String?) ?? '-',
       slug: (json['slug'] as String?) ?? '',
-      effectivePrice: _toDouble(json['effective_price']) ?? 0,
-      primaryImageUrl: json['primary_image_url'] as String?,
+      effectivePrice:
+          _toDouble(json['effective_price']) ??
+          _toDouble(json['price']) ??
+          _toDouble(json['final_price']) ??
+          0,
+      primaryImageUrl:
+          json['primary_image_url'] as String? ?? json['image_url'] as String?,
     );
   }
 }
@@ -117,12 +124,21 @@ class CouponQuote {
 
   factory CouponQuote.fromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final cart = data['cart'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final couponDetails =
+        data['coupon_details'] as Map<String, dynamic>? ?? <String, dynamic>{};
     return CouponQuote(
-      couponId: _toInt(data['coupon_id']) ?? 0,
-      code: (data['code'] as String?) ?? '',
-      discount: _toDouble(data['discount']) ?? 0,
-      subtotal: _toDouble(data['subtotal']) ?? 0,
-      finalTotal: _toDouble(data['final_total']) ?? 0,
+      couponId: 0,
+      code:
+          (couponDetails['code'] as String?) ??
+          (cart['coupon_code'] as String?) ??
+          '',
+      discount:
+          _toDouble(data['discount']) ??
+          _toDouble(cart['discount_amount']) ??
+          0,
+      subtotal: _toDouble(cart['subtotal']) ?? 0,
+      finalTotal: _toDouble(cart['total']) ?? 0,
     );
   }
 }

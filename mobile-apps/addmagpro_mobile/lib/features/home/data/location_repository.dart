@@ -60,7 +60,7 @@ class LocationRepository {
   final ApiClient _apiClient;
 
   Future<List<LocationOption>> fetchStates() async {
-    final payload = await _apiClient.get('/states');
+    final payload = await _apiClient.get('/locations/states');
     final data = payload['data'];
     if (data is! List) {
       throw ApiException('Invalid states response');
@@ -74,7 +74,7 @@ class LocationRepository {
   }
 
   Future<List<LocationOption>> fetchDistricts(int stateId) async {
-    final payload = await _apiClient.get('/districts/$stateId');
+    final payload = await _apiClient.get('/locations/districts/$stateId');
     final data = payload['data'];
     if (data is! List) {
       throw ApiException('Invalid districts response');
@@ -88,12 +88,12 @@ class LocationRepository {
   }
 
   Future<LocationSelection> fetchSelection(String token) async {
-    final payload = await _apiClient.get('/account/location', bearerToken: token);
+    final payload = await _apiClient.get('/locations', bearerToken: token);
     final data = payload['data'];
-    if (data is! Map<String, dynamic>) {
-      throw ApiException('Invalid location response');
+    if (data is Map<String, dynamic>) {
+      return LocationSelection.fromJson(data);
     }
-    return LocationSelection.fromJson(data);
+    return const LocationSelection(label: 'All India');
   }
 
   Future<LocationSelection> updateSelection(
@@ -102,12 +102,9 @@ class LocationRepository {
     int? districtId,
   }) async {
     final payload = await _apiClient.post(
-      '/account/location',
+      '/locations/save',
       bearerToken: token,
-      body: <String, dynamic>{
-        'state_id': stateId,
-        'district_id': districtId,
-      },
+      body: <String, dynamic>{'state_id': stateId, 'district_id': districtId},
     );
     final data = payload['data'];
     if (data is! Map<String, dynamic>) {

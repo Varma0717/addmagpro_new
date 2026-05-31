@@ -14,8 +14,7 @@ class CheckoutResult {
   final double total;
 
   factory CheckoutResult.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>? ?? <String, dynamic>{};
-    final order = data['order'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final order = json['data'] as Map<String, dynamic>? ?? <String, dynamic>{};
     return CheckoutResult(
       orderId: _toInt(order['id']) ?? 0,
       orderNumber: (order['order_number'] as String?) ?? '-',
@@ -54,22 +53,6 @@ class CheckoutRepository {
 
   final ApiClient _apiClient;
 
-  Future<RazorpayOrderResult> createRazorpayOrder({
-    required String token,
-    int? couponId,
-    bool useWallet = false,
-  }) async {
-    final payload = await _apiClient.post(
-      '/account/checkout/razorpay/create',
-      bearerToken: token,
-      body: <String, dynamic>{
-        'coupon_id': couponId,
-        'use_wallet': useWallet,
-      },
-    );
-    return RazorpayOrderResult.fromJson(payload);
-  }
-
   Future<CheckoutResult> placeOrder({
     required String token,
     required String name,
@@ -80,27 +63,24 @@ class CheckoutRepository {
     required String pincode,
     required String paymentMethod,
     int? couponId,
-    bool useWallet = false,
-    String? razorpayOrderId,
-    String? razorpayPaymentId,
-    String? razorpaySignature,
   }) async {
     final payload = await _apiClient.post(
-      '/account/checkout/place-order',
+      '/orders/create',
       bearerToken: token,
       body: <String, dynamic>{
-        'name': name,
-        'phone': phone,
-        'address': address,
-        'city': city,
-        'state': state,
-        'pincode': pincode,
+        'shipping_address': address,
+        'shipping_city': city,
+        'shipping_state': state,
+        'shipping_postal_code': pincode,
+        'shipping_phone': phone,
+        'billing_address': address,
+        'billing_city': city,
+        'billing_state': state,
+        'billing_postal_code': pincode,
+        'billing_phone': phone,
         'payment_method': paymentMethod,
+        'notes': 'Placed via mobile app by $name',
         'coupon_id': couponId,
-        'use_wallet': useWallet,
-        'razorpay_order_id': ?razorpayOrderId,
-        'razorpay_payment_id': ?razorpayPaymentId,
-        'razorpay_signature': ?razorpaySignature,
       },
     );
 

@@ -21,6 +21,9 @@ class WishlistApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
 
             $wishlist = $user->wishlist()->with('items.product')->first();
 
@@ -66,6 +69,10 @@ class WishlistApiController extends Controller
 
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $product = Product::findOrFail($request->product_id);
 
             if (!$product->is_active) {
@@ -110,6 +117,10 @@ class WishlistApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $wishlist = $user->wishlist()->first();
 
             if (!$wishlist) {
@@ -141,6 +152,10 @@ class WishlistApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $wishlist = $user->wishlist()->first();
 
             if ($wishlist) {
@@ -164,6 +179,10 @@ class WishlistApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $wishlist = $user->wishlist()->first();
 
             $isInWishlist = false;
@@ -193,6 +212,10 @@ class WishlistApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $wishlist = $user->wishlist()->first();
 
             $count = 0;
@@ -219,6 +242,10 @@ class WishlistApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $wishlist = $user->wishlist()->with('items.product')->first();
 
             if (!$wishlist || $wishlist->items->isEmpty()) {

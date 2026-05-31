@@ -14,30 +14,16 @@ class ProfileRepository {
     String? email,
     String? avatarPath,
   }) async {
-    late final Map<String, dynamic> payload;
-
-    if (avatarPath != null && avatarPath.isNotEmpty) {
-      payload = await _apiClient.multipartPost(
-        '/account/profile',
-        bearerToken: token,
-        fields: <String, String>{
-          'name': name,
-          if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
-          if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
-        },
-        filePaths: <String, String>{'avatar': avatarPath},
-      );
-    } else {
-      payload = await _apiClient.post(
-        '/account/profile',
-        bearerToken: token,
-        body: <String, dynamic>{
-          'name': name,
-          'phone': (phone ?? '').trim().isEmpty ? null : phone,
-          'email': (email ?? '').trim().isEmpty ? null : email,
-        },
-      );
-    }
+    final payload = await _apiClient.patch(
+      '/account/profile',
+      bearerToken: token,
+      body: <String, dynamic>{
+        'name': name,
+        'phone': (phone ?? '').trim().isEmpty ? null : phone,
+        // API currently accepts avatar_url, not multipart upload.
+        'avatar_url': (avatarPath ?? '').trim().isEmpty ? null : avatarPath,
+      },
+    );
 
     final data = payload['data'];
     if (data is! Map<String, dynamic>) {

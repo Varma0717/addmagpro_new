@@ -36,7 +36,10 @@ class HomeRepository {
   }
 
   Future<List<LocationStateOption>> fetchStates({String? token}) async {
-    final payload = await _apiClient.get('/locations', bearerToken: token);
+    final payload = await _apiClient.get(
+      '/locations/states',
+      bearerToken: token,
+    );
     final items = (payload['data'] as List<dynamic>? ?? <dynamic>[])
         .whereType<Map<String, dynamic>>()
         .map(LocationStateOption.fromJson)

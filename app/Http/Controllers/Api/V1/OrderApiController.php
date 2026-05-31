@@ -33,6 +33,10 @@ class OrderApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $perPage = $request->get('per_page', 10);
             $status = $request->get('status'); // pending, confirmed, shipped, delivered, cancelled, returned
 
@@ -67,6 +71,10 @@ class OrderApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $order = Order::where('user_id', $user->id)
                 ->with('items.product')
                 ->find($orderId);
@@ -111,6 +119,10 @@ class OrderApiController extends Controller
 
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $cart = $user->cart()->with('items.product')->first();
 
             if (!$cart || $cart->items->isEmpty()) {
@@ -234,6 +246,10 @@ class OrderApiController extends Controller
 
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $order = Order::where('user_id', $user->id)->find($orderId);
 
             if (!$order) {
@@ -302,6 +318,10 @@ class OrderApiController extends Controller
 
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $order = Order::where('user_id', $user->id)->find($orderId);
 
             if (!$order) {
@@ -338,6 +358,10 @@ class OrderApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $order = Order::where('user_id', $user->id)->find($orderId);
 
             if (!$order) {
@@ -375,6 +399,9 @@ class OrderApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
 
             $stats = [
                 'total_orders' => Order::where('user_id', $user->id)->count(),

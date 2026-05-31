@@ -26,7 +26,9 @@ class OrderSummary {
       status: json['status'] as String? ?? 'pending',
       paymentMethod: json['payment_method'] as String?,
       paymentStatus: json['payment_status'] as String?,
-      itemsCount: (json['items_count'] as num?)?.toInt() ?? 0,
+      itemsCount:
+          (json['items_count'] as num?)?.toInt() ??
+          (json['items'] is List ? (json['items'] as List).length : 0),
       total: (json['total'] as num?)?.toDouble() ?? 0,
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
     );
@@ -70,10 +72,16 @@ class OrderDetail {
       paymentStatus: json['payment_status'] as String?,
       total: (json['total'] as num?)?.toDouble() ?? 0,
       subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
-      discount: (json['discount'] as num?)?.toDouble() ?? 0,
+      discount:
+          (json['discount'] as num?)?.toDouble() ??
+          (json['discount_amount'] as num?)?.toDouble() ??
+          0,
       shippingAddress: json['shipping_address'] as String?,
       items: rawItems is List
-          ? rawItems.whereType<Map<String, dynamic>>().map(OrderItemDetail.fromJson).toList()
+          ? rawItems
+                .whereType<Map<String, dynamic>>()
+                .map(OrderItemDetail.fromJson)
+                .toList()
           : [],
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
     );
@@ -98,14 +106,24 @@ class OrderItemDetail {
   final String? imageUrl;
 
   factory OrderItemDetail.fromJson(Map<String, dynamic> json) {
-    final product = json['product'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final product =
+        json['product'] as Map<String, dynamic>? ?? <String, dynamic>{};
     return OrderItemDetail(
       id: (json['id'] as num?)?.toInt() ?? 0,
-      productName: (product['name'] as String?) ?? (json['product_name'] as String?) ?? '-',
+      productName:
+          (product['name'] as String?) ??
+          (json['product_name'] as String?) ??
+          '-',
       quantity: (json['quantity'] as num?)?.toInt() ?? 0,
-      price: (json['price'] as num?)?.toDouble() ?? 0,
+      price:
+          (json['price'] as num?)?.toDouble() ??
+          (json['unit_price'] as num?)?.toDouble() ??
+          0,
       subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
-      imageUrl: product['primary_image_url'] as String? ?? json['image_url'] as String?,
+      imageUrl:
+          product['primary_image_url'] as String? ??
+          product['image_url'] as String? ??
+          json['image_url'] as String?,
     );
   }
 }

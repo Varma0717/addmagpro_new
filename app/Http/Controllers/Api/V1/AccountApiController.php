@@ -17,8 +17,13 @@ class AccountApiController extends Controller
      */
     public function profile(Request $request)
     {
+        $user = $request->user();
+        if (!$user) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
         return $this->successResponse(
-            new AuthUserResource($request->user()),
+            new AuthUserResource($user),
             'Profile retrieved'
         );
     }
@@ -29,6 +34,9 @@ class AccountApiController extends Controller
     public function updateProfile(Request $request)
     {
         $user = $request->user();
+        if (!$user) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|min:3|max:255',
@@ -59,6 +67,10 @@ class AccountApiController extends Controller
      */
     public function addresses(Request $request)
     {
+        if (!$request->user()) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
         // TODO: Implement addresses table and return addresses
         return $this->successResponse([], 'Addresses retrieved');
     }
@@ -68,6 +80,10 @@ class AccountApiController extends Controller
      */
     public function addAddress(Request $request)
     {
+        if (!$request->user()) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
         $validator = Validator::make($request->all(), [
             'type' => 'required|in:shipping,billing,both',
             'address' => 'required|string|min:10',
@@ -91,9 +107,14 @@ class AccountApiController extends Controller
      */
     public function notifications(Request $request)
     {
+        $user = $request->user();
+        if (!$user) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
         $perPage = $request->get('per_page', 10);
 
-        $notifications = $request->user()
+        $notifications = $user
             ->notifications()
             ->latest()
             ->paginate($perPage);
@@ -106,7 +127,12 @@ class AccountApiController extends Controller
      */
     public function markNotificationRead(Request $request, int $notificationId)
     {
-        $notification = $request->user()->notifications()->find($notificationId);
+        $user = $request->user();
+        if (!$user) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
+        $notification = $user->notifications()->find($notificationId);
 
         if (!$notification) {
             return $this->notFoundResponse('Notification not found');
@@ -122,8 +148,13 @@ class AccountApiController extends Controller
      */
     public function notificationPreferences(Request $request)
     {
+        $user = $request->user();
+        if (!$user) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
         return $this->successResponse(
-            $request->user()->preferences,
+            $user->preferences,
             'Notification preferences retrieved'
         );
     }
@@ -134,6 +165,9 @@ class AccountApiController extends Controller
     public function updateNotificationPreferences(Request $request)
     {
         $user = $request->user();
+        if (!$user) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
 
         $preferences = $user->preferences ?? [];
         $preferences['email_notifications'] = $request->get('email_notifications', true);

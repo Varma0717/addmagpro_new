@@ -7,7 +7,7 @@ class LocationRepository {
   final ApiClient _apiClient;
 
   Future<List<LocationStateOption>> fetchStates() async {
-    final payload = await _apiClient.get('/states');
+    final payload = await _apiClient.get('/locations/states');
     final items = _extractList(payload);
     return items
         .map(_stateFromJson)
@@ -16,7 +16,7 @@ class LocationRepository {
   }
 
   Future<List<LocationDistrictOption>> fetchDistricts(int stateId) async {
-    final payload = await _apiClient.get('/districts/$stateId');
+    final payload = await _apiClient.get('/locations/districts/$stateId');
     final items = _extractList(payload);
     return items
         .map(_districtFromJson)
@@ -34,9 +34,9 @@ class LocationRepository {
       for (final key in ['states', 'districts', 'items']) {
         final nested = data[key];
         if (nested is List) {
-          return nested
-              .whereType<Map<String, dynamic>>()
-              .toList(growable: false);
+          return nested.whereType<Map<String, dynamic>>().toList(
+            growable: false,
+          );
         }
       }
     }
@@ -53,8 +53,9 @@ class LocationRepository {
 
   LocationDistrictOption? _districtFromJson(Map<String, dynamic> json) {
     final id = _toInt(json['id']);
-    final name =
-        (json['name'] ?? json['district_name'] ?? '').toString().trim();
+    final name = (json['name'] ?? json['district_name'] ?? '')
+        .toString()
+        .trim();
     if (id == null || name.isEmpty) return null;
     return LocationDistrictOption(id: id, name: name);
   }

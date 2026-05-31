@@ -30,7 +30,10 @@ class _WishlistScreenState extends State<WishlistScreen> {
   }
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final items = await _repository.fetchAll(widget.token);
       if (!mounted) return;
@@ -45,16 +48,22 @@ class _WishlistScreenState extends State<WishlistScreen> {
 
   Future<void> _remove(WishlistItem item) async {
     try {
-      await _repository.toggle(token: widget.token, productId: item.productId);
+      await _repository.remove(token: widget.token, itemId: item.id);
       if (!mounted) return;
       setState(() => _items.removeWhere((e) => e.id == item.id));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${item.name} removed from wishlist'), behavior: SnackBarBehavior.floating),
+        SnackBar(
+          content: Text('${item.name} removed from wishlist'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString()), behavior: SnackBarBehavior.floating),
+        SnackBar(
+          content: Text(error.toString()),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
@@ -62,31 +71,64 @@ class _WishlistScreenState extends State<WishlistScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
     }
 
     if (_error != null) {
-      return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.textMuted),
-        const SizedBox(height: 12),
-        Text(_error!, style: const TextStyle(color: AppColors.error)),
-        const SizedBox(height: 12),
-        FilledButton.tonal(onPressed: _load, child: const Text('Retry')),
-      ]));
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: AppColors.textMuted,
+            ),
+            const SizedBox(height: 12),
+            Text(_error!, style: const TextStyle(color: AppColors.error)),
+            const SizedBox(height: 12),
+            FilledButton.tonal(onPressed: _load, child: const Text('Retry')),
+          ],
+        ),
+      );
     }
 
     if (_items.isEmpty) {
-      return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
-          child: const Icon(Icons.favorite_border_rounded, size: 48, color: AppColors.textMuted),
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.favorite_border_rounded,
+                size: 48,
+                color: AppColors.textMuted,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Your wishlist is empty',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'Save products you love here',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+            ),
+          ],
         ),
-        const SizedBox(height: 16),
-        const Text('Your wishlist is empty', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 4),
-        const Text('Save products you love here', style: TextStyle(color: AppColors.textMuted, fontSize: 13)),
-      ]));
+      );
     }
 
     return RefreshIndicator(
@@ -108,7 +150,8 @@ class _WishlistScreenState extends State<WishlistScreen> {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
-                  builder: (_) => ProductDetailScreen(slug: item.slug, token: widget.token),
+                  builder: (_) =>
+                      ProductDetailScreen(slug: item.slug, token: widget.token),
                 ),
               );
             },
@@ -121,7 +164,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
 }
 
 class _WishlistCard extends StatelessWidget {
-  const _WishlistCard({required this.item, required this.onTap, required this.onRemove});
+  const _WishlistCard({
+    required this.item,
+    required this.onTap,
+    required this.onRemove,
+  });
 
   final WishlistItem item;
   final VoidCallback onTap;
@@ -137,7 +184,13 @@ class _WishlistCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           color: Colors.white,
           border: Border.all(color: AppColors.borderLight),
-          boxShadow: [BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(8),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,7 +199,9 @@ class _WishlistCard extends StatelessWidget {
               child: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(14),
+                    ),
                     child: item.primaryImageUrl != null
                         ? CachedNetworkImage(
                             imageUrl: item.primaryImageUrl!,
@@ -154,12 +209,22 @@ class _WishlistCard extends StatelessWidget {
                             fit: BoxFit.cover,
                             errorWidget: (_, _, _) => Container(
                               color: AppColors.surface,
-                              child: const Center(child: Icon(Icons.image_outlined, color: AppColors.textMuted)),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.image_outlined,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
                             ),
                           )
                         : Container(
                             color: AppColors.surface,
-                            child: const Center(child: Icon(Icons.image_outlined, color: AppColors.textMuted)),
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_outlined,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
                           ),
                   ),
                   Positioned(
@@ -169,10 +234,21 @@ class _WishlistCard extends StatelessWidget {
                       onTap: onRemove,
                       child: Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [
-                          BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 4),
-                        ]),
-                        child: const Icon(Icons.favorite_rounded, color: AppColors.error, size: 18),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(15),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.favorite_rounded,
+                          color: AppColors.error,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
@@ -184,9 +260,25 @@ class _WishlistCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppColors.textPrimary)),
+                  Text(
+                    item.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text('₹${item.effectivePrice.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary, fontSize: 14)),
+                  Text(
+                    '₹${item.effectivePrice.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                      fontSize: 14,
+                    ),
+                  ),
                 ],
               ),
             ),

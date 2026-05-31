@@ -7,8 +7,8 @@ class AuthRepository {
   AuthRepository({
     required ApiClient apiClient,
     required SecureStorageService storage,
-  })  : _apiClient = apiClient,
-        _storage = storage;
+  }) : _apiClient = apiClient,
+       _storage = storage;
 
   final ApiClient _apiClient;
   final SecureStorageService _storage;
@@ -61,7 +61,7 @@ class AuthRepository {
   Future<void> clearToken() => _storage.clearToken();
 
   Future<AuthUser> me(String token) async {
-    final payload = await _apiClient.get('/me', bearerToken: token);
+    final payload = await _apiClient.get('/auth/me', bearerToken: token);
     final data = payload['data'];
 
     if (data is! Map<String, dynamic>) {

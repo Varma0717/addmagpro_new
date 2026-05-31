@@ -87,6 +87,10 @@ class AuthApiController extends Controller
      */
     public function me(Request $request)
     {
+        if (!$request->user()) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
         return $this->successResponse(
             new AuthUserResource($request->user()),
             'User profile retrieved'
@@ -98,6 +102,10 @@ class AuthApiController extends Controller
      */
     public function logout(Request $request)
     {
+        if (!$request->user()) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
         // Revoke all tokens
         $request->user()->tokens()->delete();
 
@@ -111,8 +119,12 @@ class AuthApiController extends Controller
     {
         $user = $request->user();
 
+        if (!$user) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
         // Revoke old token
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->currentAccessToken()?->delete();
 
         // Create new token
         $token = $user->createToken('auth-token')->plainTextToken;

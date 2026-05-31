@@ -22,6 +22,9 @@ class CartApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
 
             $cart = $user->cart()->with('items.product')->first();
 
@@ -72,6 +75,10 @@ class CartApiController extends Controller
 
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $product = Product::findOrFail($request->product_id);
 
             // Validate product
@@ -143,6 +150,10 @@ class CartApiController extends Controller
 
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $cartItem = CartItem::whereHas('cart', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })->findOrFail($itemId);
@@ -180,6 +191,10 @@ class CartApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $cartItem = CartItem::whereHas('cart', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })->findOrFail($itemId);
@@ -217,6 +232,10 @@ class CartApiController extends Controller
 
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $cart = $user->cart()->with('items')->first();
 
             if (!$cart || $cart->items->isEmpty()) {
@@ -284,6 +303,10 @@ class CartApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $cart = $user->cart()->first();
 
             if (!$cart) {
@@ -316,6 +339,10 @@ class CartApiController extends Controller
     {
         try {
             $user = $request->user();
+            if (!$user) {
+                return $this->unauthorizedResponse('Authentication required', 401);
+            }
+
             $cart = $user->cart()->first();
 
             if ($cart) {

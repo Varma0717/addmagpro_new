@@ -18,13 +18,24 @@ class WishlistItem {
   final String? addedAt;
 
   factory WishlistItem.fromJson(Map<String, dynamic> json) {
+    final product =
+        json['product'] as Map<String, dynamic>? ?? <String, dynamic>{};
     return WishlistItem(
       id: (json['id'] as num?)?.toInt() ?? 0,
-      productId: (json['product_id'] as num?)?.toInt() ?? 0,
-      name: (json['name'] as String?) ?? '-',
-      slug: (json['slug'] as String?) ?? '',
-      effectivePrice: (json['effective_price'] as num?)?.toDouble() ?? 0,
-      primaryImageUrl: json['primary_image_url'] as String?,
+      productId:
+          (json['product_id'] as num?)?.toInt() ??
+          (product['id'] as num?)?.toInt() ??
+          0,
+      name: (json['name'] as String?) ?? (product['name'] as String?) ?? '-',
+      slug: (json['slug'] as String?) ?? (product['slug'] as String?) ?? '',
+      effectivePrice:
+          (json['effective_price'] as num?)?.toDouble() ??
+          (product['final_price'] as num?)?.toDouble() ??
+          (product['price'] as num?)?.toDouble() ??
+          0,
+      primaryImageUrl:
+          json['primary_image_url'] as String? ??
+          product['image_url'] as String?,
       addedAt: json['added_at'] as String?,
     );
   }
