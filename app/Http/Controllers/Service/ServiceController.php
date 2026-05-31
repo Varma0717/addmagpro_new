@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Service\ServiceUser;
+use App\Models\User;
 use App\Models\Service\Cartproducts;
 use App\Models\Admin_Panel\Service;
 use App\Models\Admin_Panel\BankDetails;
@@ -1582,13 +1583,21 @@ class ServiceController extends Controller
             return redirect()->route('service_user_login');
         }
 
-        // Get service user and generate Sanctum token for API authentication
-        $user = ServiceUser::find($user_id);
+        // Resolve the migrated User record so the wallet API gets a real users.id value.
+        $serviceUser = ServiceUser::find($user_id);
+        if (!$serviceUser) {
+            return redirect()->route('service_user_login');
+        }
+
+        $user = User::where('phone', $serviceUser->member_phone)
+            ->orWhere('email', $serviceUser->member_phone . '@service.local')
+            ->first();
+
         if (!$user) {
             return redirect()->route('service_user_login');
         }
 
-        // Generate a Sanctum token for API access
+        // Generate a Sanctum token for API access from the authenticated User model.
         $token = $user->createToken('wallet-topup')->plainTextToken;
 
         $min_topup = config('wallet.min_topup', 100);
