@@ -11,7 +11,7 @@
 <div class="container-max py-12">
 
     <!-- HERO SECTION -->
-    <section class="hero section mb-12">
+    <section class="hero section">
         <div class="grid grid-cols-1 md:grid-cols-2 items-center gap-8">
             <div class="hero-content">
                 <h1>Shop Smart, Save More</h1>
