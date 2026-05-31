@@ -173,7 +173,7 @@
 @section('mainsection')
 
 {{-- ====== 1. HERO SWIPER BANNER ====== --}}
-<section class="hero-swiper section-b-space">
+<section class="hero-swiper section-b-space !pt-0">
     <div class="swiper hero-slider" id="heroSlider">
         <div class="swiper-wrapper">
             @isset($main_slider_banner)
