@@ -148,12 +148,13 @@ class LocationApiController extends Controller
     public function getStates(Request $request)
     {
         try {
-            $states = \App\Models\State::select('id', 'state_name', 'state_code')
+            // Try with state_id first (if that's the primary key)
+            $states = \App\Models\State::query()
                 ->orderBy('state_name')
                 ->get()
                 ->map(function ($state) {
                     return [
-                        'id' => $state->id,
+                        'id' => $state->state_id ?? $state->id ?? null,
                         'state_name' => $state->state_name ?? 'Unknown',
                         'state_code' => $state->state_code ?? '',
                     ];
@@ -176,12 +177,11 @@ class LocationApiController extends Controller
     {
         try {
             $districts = \App\Models\District::where('state_id', $stateId)
-                ->select('id', 'district_name', 'state_id')
                 ->orderBy('district_name')
                 ->get()
                 ->map(function ($district) {
                     return [
-                        'id' => $district->id,
+                        'id' => $district->district_id ?? $district->id ?? null,
                         'district_name' => $district->district_name ?? 'Unknown',
                         'state_id' => $district->state_id,
                     ];

@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class State extends Model
 {
     use HasFactory;
+
+    protected $table = 'states';
+    protected $primaryKey = 'state_id'; // or 'id' depending on table structure
+    public $timestamps = false;
+
+    protected $fillable = [
+        'state_name',
+        'state_code',
+    ];
 }
