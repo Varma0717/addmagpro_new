@@ -7,6 +7,7 @@ class HomeRepository {
   final ApiClient _apiClient;
 
   Future<HomeFeed> fetch({
+    String? token,
     double? latitude,
     double? longitude,
     String? city,
@@ -30,12 +31,12 @@ class HomeRepository {
     }
 
     final path = params.isEmpty ? '/home' : '/home?${params.join('&')}';
-    final payload = await _apiClient.get(path);
+    final payload = await _apiClient.get(path, bearerToken: token);
     return HomeFeed.fromJson(payload);
   }
 
-  Future<List<LocationStateOption>> fetchStates() async {
-    final payload = await _apiClient.get('/states');
+  Future<List<LocationStateOption>> fetchStates({String? token}) async {
+    final payload = await _apiClient.get('/locations', bearerToken: token);
     final items = (payload['data'] as List<dynamic>? ?? <dynamic>[])
         .whereType<Map<String, dynamic>>()
         .map(LocationStateOption.fromJson)
@@ -43,8 +44,14 @@ class HomeRepository {
     return items;
   }
 
-  Future<List<LocationDistrictOption>> fetchDistricts(int stateId) async {
-    final payload = await _apiClient.get('/districts/$stateId');
+  Future<List<LocationDistrictOption>> fetchDistricts(
+    int stateId, {
+    String? token,
+  }) async {
+    final payload = await _apiClient.get(
+      '/locations/districts/$stateId',
+      bearerToken: token,
+    );
     final items = (payload['data'] as List<dynamic>? ?? <dynamic>[])
         .whereType<Map<String, dynamic>>()
         .map(LocationDistrictOption.fromJson)

@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\ProductReview;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ProductApiController extends Controller
 {
@@ -314,17 +315,46 @@ class ProductApiController extends Controller
      */
     private function formatProductResponse(Product $product): array
     {
+        // Get primary image
+        $primaryImage = $product->images()->first();
+        $imageUrl = $primaryImage ? $primaryImage->image_path : null;
+
+        // Calculate effective price (with discount if any)
+        $effectivePrice = (float) $product->unit_price;
+        if ($product->discount_type && $product->discount_value) {
+            if ($product->discount_type === 'percentage') {
+                $effectivePrice = $effectivePrice * (1 - ($product->discount_value / 100));
+            } else {
+                $effectivePrice = $effectivePrice - $product->discount_value;
+            }
+        }
+
+        // Get average rating
+        $avgRating = $product->reviews()
+            ->avg('rating');
+
         return [
             'id' => $product->product_id,
+            'product_id' => $product->product_id,
             'name' => $product->product_name,
+            'slug' => $product->slug ?? Str::slug($product->product_name),
             'description' => $product->product_description,
             'category_id' => $product->category_id,
             'vendor_id' => $product->vendor_id,
             'brand_id' => $product->brand_id,
+            'brand_name' => $product->brand?->name ?? null,
             'item_code' => $product->item_code,
             'price' => (float) $product->unit_price,
+            'effective_price' => round($effectivePrice, 2),
             'cost_price' => (float) $product->purchase_price,
-            'image_url' => $product->product_images,
+            'discount_type' => $product->discount_type,
+            'discount_value' => $product->discount_value,
+            'stock_quantity' => (int) $product->quantity,
+            'primary_image_url' => $imageUrl,
+            'image_url' => $imageUrl,
+            'rating_avg' => $avgRating ? round($avgRating, 1) : null,
+            'is_active' => (bool) $product->is_active,
+            'created_at' => $product->created_at?->toIso8601String(),
         ];
     }
 

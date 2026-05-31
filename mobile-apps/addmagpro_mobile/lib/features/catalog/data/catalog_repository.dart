@@ -7,6 +7,7 @@ class CatalogRepository {
   final ApiClient _apiClient;
 
   Future<ProductListResponse> fetchProducts({
+    String? token,
     int page = 1,
     String? categorySlug,
     String? sort,
@@ -35,16 +36,23 @@ class CatalogRepository {
       params.add('brand=${Uri.encodeQueryComponent(brand.trim())}');
     }
 
-    final payload = await _apiClient.get('/products?${params.join('&')}');
+    final payload = await _apiClient.get(
+      '/products?${params.join('&')}',
+      bearerToken: token,
+    );
     return ProductListResponse.fromJson(payload);
   }
 
-  Future<ProductDetail> fetchProductDetail(String slug) async {
-    final payload = await _apiClient.get('/products/${Uri.encodeComponent(slug)}');
+  Future<ProductDetail> fetchProductDetail(String slug, {String? token}) async {
+    final payload = await _apiClient.get(
+      '/products/${Uri.encodeComponent(slug)}',
+      bearerToken: token,
+    );
     return ProductDetail.fromJson(payload);
   }
 
   Future<ListingListResponse> fetchListings({
+    String? token,
     int page = 1,
     int? stateId,
     int? districtId,
@@ -56,12 +64,18 @@ class CatalogRepository {
     if (districtId != null) {
       params.add('district_id=$districtId');
     }
-    final payload = await _apiClient.get('/listings?${params.join('&')}');
+    final payload = await _apiClient.get(
+      '/listings?${params.join('&')}',
+      bearerToken: token,
+    );
     return ListingListResponse.fromJson(payload);
   }
 
-  Future<ListingDetail> fetchListingDetail(String slug) async {
-    final payload = await _apiClient.get('/listings/${Uri.encodeComponent(slug)}');
+  Future<ListingDetail> fetchListingDetail(String slug, {String? token}) async {
+    final payload = await _apiClient.get(
+      '/listings/${Uri.encodeComponent(slug)}',
+      bearerToken: token,
+    );
     return ListingDetail.fromJson(payload);
   }
 }

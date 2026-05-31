@@ -8,6 +8,7 @@ class SearchRepository {
 
   Future<MixedSearchResponse> search(
     String query, {
+    String? token,
     int? stateId,
     int? districtId,
   }) async {
@@ -23,7 +24,10 @@ class SearchRepository {
     if (districtId != null) {
       params.add('district_id=$districtId');
     }
-    final payload = await _apiClient.get('/search/mixed?${params.join('&')}');
+    final payload = await _apiClient.get(
+      '/search?${params.join('&')}',
+      bearerToken: token,
+    );
     return MixedSearchResponse.fromJson(payload);
   }
 }

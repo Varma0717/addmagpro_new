@@ -255,13 +255,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _openLocationSheet() async {
     setState(() => _locationBusy = true);
     try {
-      final states = await _repository.fetchStates();
+      final states = await _repository.fetchStates(
+        token: widget.appState.token,
+      );
       if (!mounted) return;
       final result = await showModalBottomSheet<_LocationSelection>(
         context: context,
         isScrollControlled: true,
         builder: (_) => _LocationPickerSheet(
           repository: _repository,
+          token: widget.appState.token,
           states: states,
           initialStateId: _selectedStateId,
           initialDistrictId: _selectedDistrictId,
@@ -358,6 +361,7 @@ class _DashboardViewState extends State<_DashboardView> {
     });
     try {
       final response = await _repository.fetch(
+        token: widget.token,
         stateId: widget.stateId,
         districtId: widget.districtId,
       );
@@ -999,12 +1003,14 @@ class _LocationPickerSheet extends StatefulWidget {
     required this.states,
     required this.initialStateId,
     required this.initialDistrictId,
+    this.token,
   });
 
   final HomeRepository repository;
   final List<LocationStateOption> states;
   final int? initialStateId;
   final int? initialDistrictId;
+  final String? token;
 
   @override
   State<_LocationPickerSheet> createState() => _LocationPickerSheetState();
@@ -1029,7 +1035,10 @@ class _LocationPickerSheetState extends State<_LocationPickerSheet> {
   Future<void> _loadDistricts(int stateId, {bool keepDistrict = false}) async {
     setState(() => _loadingDistricts = true);
     try {
-      final items = await widget.repository.fetchDistricts(stateId);
+      final items = await widget.repository.fetchDistricts(
+        stateId,
+        token: widget.token,
+      );
       if (!mounted) return;
       setState(() {
         _districts = items;

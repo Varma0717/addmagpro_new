@@ -49,6 +49,8 @@ Route::prefix('v1/auth')->group(function () {
 // Location Routes (Public)
 Route::prefix('v1/locations')->group(function () {
     Route::get('', [LocationApiController::class, 'index']);
+    Route::get('states', [LocationApiController::class, 'getStates']);
+    Route::get('districts/{stateId}', [LocationApiController::class, 'getDistricts']);
     Route::post('detect', [LocationApiController::class, 'detect']);
     Route::post('nearby', [LocationApiController::class, 'nearby']);
     Route::post('save', [LocationApiController::class, 'saveUserLocation'])->middleware('auth:sanctum');

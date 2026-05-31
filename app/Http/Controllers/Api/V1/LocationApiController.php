@@ -141,4 +141,59 @@ class LocationApiController extends Controller
             'Nearby locations retrieved'
         );
     }
+
+    /**
+     * Get all states
+     */
+    public function getStates(Request $request)
+    {
+        try {
+            $states = \App\Models\State::select('id', 'state_name', 'state_code')
+                ->orderBy('state_name')
+                ->get()
+                ->map(function ($state) {
+                    return [
+                        'id' => $state->id,
+                        'state_name' => $state->state_name ?? 'Unknown',
+                        'state_code' => $state->state_code ?? '',
+                    ];
+                });
+
+            return $this->successResponse($states, 'States retrieved');
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Failed to fetch states: ' . $e->getMessage(),
+                [],
+                500
+            );
+        }
+    }
+
+    /**
+     * Get districts for a specific state
+     */
+    public function getDistricts($stateId)
+    {
+        try {
+            $districts = \App\Models\District::where('state_id', $stateId)
+                ->select('id', 'district_name', 'state_id')
+                ->orderBy('district_name')
+                ->get()
+                ->map(function ($district) {
+                    return [
+                        'id' => $district->id,
+                        'district_name' => $district->district_name ?? 'Unknown',
+                        'state_id' => $district->state_id,
+                    ];
+                });
+
+            return $this->successResponse($districts, 'Districts retrieved');
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Failed to fetch districts: ' . $e->getMessage(),
+                [],
+                500
+            );
+        }
+    }
 }

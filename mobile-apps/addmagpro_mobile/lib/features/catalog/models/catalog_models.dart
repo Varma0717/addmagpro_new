@@ -4,8 +4,7 @@ enum ProductSortOption {
   latest('latest', 'Latest'),
   priceAsc('price_asc', 'Price: Low to High'),
   priceDesc('price_desc', 'Price: High to Low'),
-  rating('rating', 'Rating'),
-  ;
+  rating('rating', 'Rating');
 
   const ProductSortOption(this.value, this.label);
   final String value;
@@ -35,7 +34,11 @@ class ProductFilterQuery {
   final ProductSortOption sort;
 
   bool get hasActiveFilters =>
-      minPrice != null || maxPrice != null || minRating != null || brandId != null || sort != ProductSortOption.latest;
+      minPrice != null ||
+      maxPrice != null ||
+      minRating != null ||
+      brandId != null ||
+      sort != ProductSortOption.latest;
 
   ProductFilterQuery copyWith({
     double? minPrice,
@@ -72,31 +75,31 @@ class ProductListResponse {
   final List<BrandFilterOption> availableBrands;
 
   factory ProductListResponse.fromJson(Map<String, dynamic> json) {
-    final data = json['data'];
-    final meta = json['meta'];
-    final pagination = meta is Map<String, dynamic> && meta['pagination'] is Map<String, dynamic>
-        ? meta['pagination'] as Map<String, dynamic>
-        : null;
-    final filters = meta is Map<String, dynamic> && meta['filters'] is Map<String, dynamic>
-        ? meta['filters'] as Map<String, dynamic>
-        : null;
-    final availableBrandsRaw = filters?['available_brands'];
+    // Handle Laravel pagination response
+    final data = json['data'] ?? json;
+
+    // Laravel returns pagination in 'meta' or in response properties directly
+    int currentPage = 1;
+    int lastPage = 1;
+
+    // Try to get pagination from Laravel's typical paginate() response
+    if (json['current_page'] is int) {
+      currentPage = json['current_page'] as int;
+    }
+    if (json['last_page'] is int) {
+      lastPage = json['last_page'] as int;
+    }
 
     return ProductListResponse(
       items: data is List
           ? data
-              .whereType<Map<String, dynamic>>()
-              .map(ProductListItem.fromJson)
-              .toList(growable: false)
+                .whereType<Map<String, dynamic>>()
+                .map(ProductListItem.fromJson)
+                .toList(growable: false)
           : <ProductListItem>[],
-      currentPage: _toInt(pagination?['current_page']) ?? 1,
-      lastPage: _toInt(pagination?['last_page']) ?? 1,
-      availableBrands: availableBrandsRaw is List
-          ? availableBrandsRaw
-              .whereType<Map<String, dynamic>>()
-              .map(BrandFilterOption.fromJson)
-              .toList(growable: false)
-          : <BrandFilterOption>[],
+      currentPage: currentPage,
+      lastPage: lastPage,
+      availableBrands: const <BrandFilterOption>[],
     );
   }
 }
@@ -129,10 +132,16 @@ class ProductListItem {
       name: (json['name'] as String?) ?? '-',
       slug: (json['slug'] as String?) ?? '',
       effectivePrice: _toDouble(json['effective_price']) ?? 0,
-      primaryImageUrl: AppConfig.resolveImageUrl(json['primary_image_url'] as String?),
+      primaryImageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String?,
+      ),
       ratingAvg: _toDouble(json['rating_avg']),
-      brandId: _toInt(json['brand_id']) ?? (brand is Map<String, dynamic> ? _toInt(brand['id']) : null),
-      brandName: json['brand_name'] as String? ?? (brand is Map<String, dynamic> ? brand['name'] as String? : null),
+      brandId:
+          _toInt(json['brand_id']) ??
+          (brand is Map<String, dynamic> ? _toInt(brand['id']) : null),
+      brandName:
+          json['brand_name'] as String? ??
+          (brand is Map<String, dynamic> ? brand['name'] as String? : null),
     );
   }
 }
@@ -194,30 +203,36 @@ class ProductDetail {
       slug: (data['slug'] as String?) ?? '',
       description: data['description'] as String?,
       shortDescription: data['short_description'] as String?,
-      price: _toDouble(data['price']) ??
+      price:
+          _toDouble(data['price']) ??
           _toDouble(data['original_price']) ??
           _toDouble(data['mrp']) ??
           _toDouble(data['effective_price']) ??
           0,
       effectivePrice: _toDouble(data['effective_price']) ?? 0,
-      discountPercent: _toDouble(data['discount_percent']) ??
+      discountPercent:
+          _toDouble(data['discount_percent']) ??
           _toDouble(data['discount_percentage']) ??
           0,
       images: images is List
           ? images
-              .whereType<Map<String, dynamic>>()
-              .map((e) => AppConfig.resolveImageUrl(e['image_url'] as String?))
-              .whereType<String>()
-              .toList(growable: false)
+                .whereType<Map<String, dynamic>>()
+                .map(
+                  (e) => AppConfig.resolveImageUrl(e['image_url'] as String?),
+                )
+                .whereType<String>()
+                .toList(growable: false)
           : <String>[],
       ratingAvg: _toDouble(data['rating_avg']),
       stock: _toInt(data['stock']) ?? 0,
-      category: category is Map<String, dynamic> ? category['name'] as String? : null,
+      category: category is Map<String, dynamic>
+          ? category['name'] as String?
+          : null,
       reviews: reviews is List
           ? reviews
-              .whereType<Map<String, dynamic>>()
-              .map(ProductReview.fromJson)
-              .toList(growable: false)
+                .whereType<Map<String, dynamic>>()
+                .map(ProductReview.fromJson)
+                .toList(growable: false)
           : <ProductReview>[],
     );
   }
@@ -251,7 +266,11 @@ class ProductReview {
 }
 
 class ListingListResponse {
-  ListingListResponse({required this.items, required this.currentPage, required this.lastPage});
+  ListingListResponse({
+    required this.items,
+    required this.currentPage,
+    required this.lastPage,
+  });
 
   final List<ListingListItem> items;
   final int currentPage;
@@ -260,16 +279,18 @@ class ListingListResponse {
   factory ListingListResponse.fromJson(Map<String, dynamic> json) {
     final data = json['data'];
     final meta = json['meta'];
-    final pagination = meta is Map<String, dynamic> && meta['pagination'] is Map<String, dynamic>
+    final pagination =
+        meta is Map<String, dynamic> &&
+            meta['pagination'] is Map<String, dynamic>
         ? meta['pagination'] as Map<String, dynamic>
         : null;
 
     return ListingListResponse(
       items: data is List
           ? data
-              .whereType<Map<String, dynamic>>()
-              .map(ListingListItem.fromJson)
-              .toList(growable: false)
+                .whereType<Map<String, dynamic>>()
+                .map(ListingListItem.fromJson)
+                .toList(growable: false)
           : <ListingListItem>[],
       currentPage: _toInt(pagination?['current_page']) ?? 1,
       lastPage: _toInt(pagination?['last_page']) ?? 1,
@@ -304,8 +325,12 @@ class ListingListItem {
       slug: (json['slug'] as String?) ?? '',
       city: json['city'] as String?,
       ratingAvg: _toDouble(json['rating_avg']),
-      primaryImageUrl: AppConfig.resolveImageUrl(json['primary_image_url'] as String?),
-      categoryName: category is Map<String, dynamic> ? category['name'] as String? : null,
+      primaryImageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String?,
+      ),
+      categoryName: category is Map<String, dynamic>
+          ? category['name'] as String?
+          : null,
     );
   }
 }
@@ -353,10 +378,12 @@ class ListingDetail {
       websiteUrl: data['website_url'] as String?,
       images: images is List
           ? images
-              .whereType<Map<String, dynamic>>()
-              .map((e) => AppConfig.resolveImageUrl(e['image_url'] as String?))
-              .whereType<String>()
-              .toList(growable: false)
+                .whereType<Map<String, dynamic>>()
+                .map(
+                  (e) => AppConfig.resolveImageUrl(e['image_url'] as String?),
+                )
+                .whereType<String>()
+                .toList(growable: false)
           : <String>[],
       ratingAvg: _toDouble(data['rating_avg']),
     );
