@@ -250,10 +250,10 @@
                 return;
             }
             const rzp = new Razorpay({
-                key: data.data.keyId,
-                amount: data.data.amount,
-                currency: data.data.currency,
-                order_id: data.data.orderId,
+                key: data.data.razorpay_key,
+                amount: Number(data.data.amount) * 100,
+                currency: data.data.currency || 'INR',
+                order_id: data.data.order_id,
                 name: 'AddMagPro',
                 description: `Wallet Top-up ₹${numAmount}`,
                 theme: {
