@@ -100,18 +100,24 @@
 
     .loader {
         display: none;
-        text-align: center;
-        padding: 20px;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
     }
 
     .spinner {
-        border: 4px solid #f3f3f3;
+        border: 4px solid #f0f0f0;
         border-top: 4px solid var(--theme-color);
         border-radius: 50%;
         width: 40px;
         height: 40px;
         animation: spin 1s linear infinite;
-        margin: 0 auto;
     }
 
     @keyframes spin {
@@ -126,57 +132,43 @@
 </style>
 @endsection
 
-@section('mainsection')
-<section class="section-b-space">
-    <div class="custom-container">
-        <div class="topup-container">
-            <div class="dash-card" style="border-radius: 12px; overflow: hidden;">
-                <!-- Header -->
-                <div class="p-4 text-white" style="background: linear-gradient(135deg, var(--theme-color), #7a2800);">
-                    <h4 class="fw-bold mb-0">
-                        <i class="ri-wallet-3-line me-2"></i> Add Money to Wallet
-                    </h4>
-                    <p class="mb-0 mt-2" style="font-size: 13px; opacity: 0.9;">
-                        Fast & Secure payment via Razorpay
-                    </p>
-                </div>
+@section('content')
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="topup-container">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h4><i class="ri-wallet-line"></i> Add Money to Wallet</h4>
+                        <p style="color: #666; margin: 8px 0;">Fast & Secure payment via Razorpay</p>
+                    </div>
 
-                <!-- Body -->
-                <div class="p-4">
-                    <!-- Info Box -->
                     <div class="info-box">
-                        <i class="ri-information-line me-2"></i>
                         <strong>Limits:</strong> Minimum ₹{{ $min_topup }}, Maximum ₹{{ $max_topup }}
                     </div>
 
-                    <!-- Preset Amounts -->
-                    <p class="mb-2" style="font-weight: 600; color: #333;">Select Amount</p>
+                    <div id="errorMessage" class="error-message"></div>
+                    <div id="successMessage" class="success-message"></div>
+
+                    <p style="font-weight: 600; margin-bottom: 12px;">Select Amount</p>
                     <div class="amount-preset">
-                        <button type="button" class="preset-btn" data-amount="100">₹100</button>
-                        <button type="button" class="preset-btn" data-amount="500">₹500</button>
-                        <button type="button" class="preset-btn" data-amount="1000">₹1,000</button>
-                        <button type="button" class="preset-btn" data-amount="5000">₹5,000</button>
+                        <button class="preset-btn" data-amount="100">₹100</button>
+                        <button class="preset-btn" data-amount="500">₹500</button>
+                        <button class="preset-btn" data-amount="1000">₹1,000</button>
+                        <button class="preset-btn" data-amount="5000">₹5,000</button>
                     </div>
 
-                    <!-- Custom Amount -->
-                    <p class="mb-2" style="font-weight: 600; color: #333;">Or Enter Custom Amount</p>
-                    <input type="number" id="customAmount" class="custom-input" placeholder="Enter amount (₹)"
-                        min="{{ $min_topup }}" max="{{ $max_topup }}">
+                    <p style="font-weight: 600; margin-bottom: 12px;">Or Enter Custom Amount</p>
+                    <input type="number" id="customAmount" class="custom-input" placeholder="Enter amount" min="{{ $min_topup }}" max="{{ $max_topup }}">
 
-                    <!-- Messages -->
-                    <div class="error-message" id="errorMessage"></div>
-                    <div class="success-message" id="successMessage"></div>
+                    <button id="topupBtn" class="topup-btn">
+                        <span id="btnText">Proceed to Payment</span>
+                    </button>
 
                     <!-- Loader -->
-                    <div class="loader" id="loader">
+                    <div id="loader" class="loader">
                         <div class="spinner"></div>
-                        <p class="mt-3" style="font-size: 14px; color: #666;">Processing...</p>
                     </div>
-
-                    <!-- Topup Button -->
-                    <button type="button" class="topup-btn" id="topupBtn">
-                        <i class="ri-bank-card-line me-2"></i> Proceed to Payment
-                    </button>
 
                     <!-- Back Link -->
                     <div style="text-align: center; margin-top: 20px;">
@@ -194,7 +186,7 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
-    // Configuration
+    // Configuration - ALL ON SINGLE LINES
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
     const MIN_TOPUP = {
         {
@@ -206,7 +198,7 @@
             $max_topup
         }
     };
-    const authToken = '{{ $token }}'; // Server-provided Sanctum token
+    const authToken = '{{ $token }}';
 
     // Helper functions
     const getAuthToken = () => authToken;
@@ -367,20 +359,18 @@
                 this.classList.add('active');
                 const input = document.getElementById('customAmount');
                 if (input) input.value = this.dataset.amount;
-                clearMessages();
             });
         });
 
-        // Custom amount input listener
+        // Custom input listener
         const customInput = document.getElementById('customAmount');
         if (customInput) {
             customInput.addEventListener('input', function() {
                 document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-                clearMessages();
             });
         }
 
-        // Proceed button listener - function is now globally available
+        // Proceed button listener
         const proceedBtn = document.getElementById('topupBtn');
         if (proceedBtn) {
             proceedBtn.addEventListener('click', initiateTopup);
