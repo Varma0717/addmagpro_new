@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\WalletApiController;
 use App\Http\Controllers\Api\V1\ReferralApiController;
 use App\Http\Controllers\Api\V1\HomeApiController;
 use App\Http\Controllers\Api\V1\ProductApiController;
+use App\Http\Controllers\Api\V1\ListingApiController;
 use App\Http\Controllers\Api\V1\CartApiController;
 use App\Http\Controllers\Api\V1\OrderApiController;
 use App\Http\Controllers\Api\V1\WishlistApiController;
@@ -80,6 +81,12 @@ Route::prefix('v1/products')->group(function () {
     Route::get('price-range', [ProductApiController::class, 'priceRange']);
     Route::get('category/{slug}', [ProductApiController::class, 'byCategory']);
     Route::get('{slug}', [ProductApiController::class, 'show']);
+});
+
+// Listing Routes (Public)
+Route::prefix('v1/listings')->group(function () {
+    Route::get('', [ListingApiController::class, 'index']);
+    Route::get('{slug}', [ListingApiController::class, 'show']);
 });
 
 // Search Routes (Public)

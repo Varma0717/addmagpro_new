@@ -13,12 +13,36 @@ class MixedSearchResponse {
     }
 
     final mixed = data['mixed'];
-    final results = mixed is List
-        ? mixed
+    final results = <MixedSearchItem>[];
+
+    if (mixed is List) {
+      results.addAll(
+        mixed
+            .whereType<Map<String, dynamic>>()
+            .map(MixedSearchItem.fromJson)
+            .toList(growable: false),
+      );
+    } else {
+      final products = data['products'];
+      if (products is List) {
+        results.addAll(
+          products
               .whereType<Map<String, dynamic>>()
-              .map(MixedSearchItem.fromJson)
-              .toList(growable: false)
-        : <MixedSearchItem>[];
+              .map((item) => MixedSearchItem.fromProductJson(item))
+              .toList(growable: false),
+        );
+      }
+
+      final services = data['services'];
+      if (services is List) {
+        results.addAll(
+          services
+              .whereType<Map<String, dynamic>>()
+              .map((item) => MixedSearchItem.fromServiceJson(item))
+              .toList(growable: false),
+        );
+      }
+    }
 
     return MixedSearchResponse(
       query: (data['query'] as String?) ?? '',
@@ -61,7 +85,53 @@ class MixedSearchItem {
       city: json['city'] as String?,
       price: _toDouble(json['price']),
       primaryImageUrl: AppConfig.resolveImageUrl(
-        json['primary_image_url'] as String? ?? json['image_url'] as String?,
+        json['primary_image_url'] as String? ??
+            json['image_url'] as String? ??
+            json['icon_url'] as String?,
+      ),
+    );
+  }
+
+  factory MixedSearchItem.fromProductJson(Map<String, dynamic> json) {
+    final id = _toInt(json['id']) ?? _toInt(json['product_id']) ?? 0;
+    final title =
+        (json['name'] as String?) ?? (json['product_name'] as String?) ?? '-';
+
+    return MixedSearchItem(
+      type: 'product',
+      id: id,
+      title: title,
+      slug: (json['slug'] as String?) ?? (id > 0 ? 'product-$id' : ''),
+      subtitle: json['description'] as String?,
+      city: null,
+      price: _toDouble(json['price']) ?? _toDouble(json['effective_price']),
+      primaryImageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String? ??
+            json['image_url'] as String? ??
+            json['product_images'] as String?,
+      ),
+    );
+  }
+
+  factory MixedSearchItem.fromServiceJson(Map<String, dynamic> json) {
+    final id = _toInt(json['id']) ?? _toInt(json['service_id']) ?? 0;
+    final title =
+        (json['name'] as String?) ?? (json['service_name'] as String?) ?? '-';
+
+    return MixedSearchItem(
+      type: 'listing',
+      id: id,
+      title: title,
+      slug: (json['slug'] as String?) ?? (id > 0 ? 'service-$id' : ''),
+      subtitle: json['description'] as String?,
+      city: null,
+      price: null,
+      primaryImageUrl: AppConfig.resolveImageUrl(
+        json['primary_image_url'] as String? ??
+            json['image_url'] as String? ??
+            json['icon_url'] as String? ??
+            json['service_image'] as String? ??
+            json['service_category_image'] as String?,
       ),
     );
   }

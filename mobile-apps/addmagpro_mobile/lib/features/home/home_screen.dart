@@ -12,6 +12,7 @@ import '../../core/widgets/app_widgets.dart';
 import '../account/presentation/account_screen.dart';
 import '../catalog/presentation/categories_screen.dart';
 import '../catalog/presentation/listing_detail_screen.dart';
+import '../catalog/presentation/listing_list_screen.dart';
 import '../catalog/presentation/product_detail_screen.dart';
 import '../catalog/presentation/product_list_screen.dart';
 import '../cart/presentation/cart_screen.dart';
@@ -587,7 +588,15 @@ class _DashboardViewState extends State<_DashboardView> {
             SectionHeader(
               title: 'Services',
               actionLabel: 'See All',
-              onAction: () {},
+              onAction: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => ListingListScreen(
+                    appState: widget.appState,
+                    title: 'All Services',
+                    listingType: 'service',
+                  ),
+                ),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
             const SizedBox(height: 14),
@@ -606,9 +615,14 @@ class _DashboardViewState extends State<_DashboardView> {
                 final service = feed.services[index];
                 return GestureDetector(
                   onTap: () {
-                    // Handle service tap - can navigate to service detail
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${service.name} service')),
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ListingListScreen(
+                          appState: widget.appState,
+                          title: service.name,
+                          listingType: 'service',
+                        ),
+                      ),
                     );
                   },
                   child: Column(
@@ -660,6 +674,63 @@ class _DashboardViewState extends State<_DashboardView> {
             ),
             const SizedBox(height: 24),
           ],
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _HomeNavTile(
+                    icon: Icons.store_outlined,
+                    title: 'Stores',
+                    color: const Color(0xFF22C55E),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ListingListScreen(
+                          appState: widget.appState,
+                          title: 'All Stores',
+                          listingType: 'store',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _HomeNavTile(
+                    icon: Icons.storefront_outlined,
+                    title: 'Vendors',
+                    color: const Color(0xFF0EA5E9),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ListingListScreen(
+                          appState: widget.appState,
+                          title: 'All Vendors',
+                          listingType: 'vendor',
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _HomeNavTile(
+                    icon: Icons.apps_outlined,
+                    title: 'All',
+                    color: AppColors.primary,
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            ListingListScreen(appState: widget.appState),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
 
           // ── Referral Card ──
           if (feed.referralCard != null) ...[
@@ -1372,6 +1443,50 @@ class _ServiceCard extends StatelessWidget {
             ),
             if (listing.ratingAvg != null)
               StarRating(rating: listing.ratingAvg!, size: 12),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeNavTile extends StatelessWidget {
+  const _HomeNavTile({
+    required this.icon,
+    required this.title,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Ink(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: color.withAlpha(18),
+          border: Border.all(color: color.withAlpha(60)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+            ),
           ],
         ),
       ),

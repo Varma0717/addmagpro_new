@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../core/config/app_config.dart';
 import '../models/product_model.dart';
 import 'product_detail_screen.dart';
@@ -16,6 +17,8 @@ class CatalogScreen extends StatefulWidget {
 }
 
 class _CatalogScreenState extends State<CatalogScreen> {
+  final ApiClient _apiClient = ApiClient();
+  final TextEditingController _searchController = TextEditingController();
   final List<ProductModel> _products = [];
   bool _isLoading = true;
   double _minPrice = 0;
@@ -30,21 +33,49 @@ class _CatalogScreenState extends State<CatalogScreen> {
   Future<void> _loadProducts() async {
     setState(() => _isLoading = true);
     try {
-      // TODO: Call product repository to fetch products
-      // final products = await _productRepository.getProducts(
-      //   token: widget.token,
-      //   category: _selectedCategory,
-      //   minPrice: _minPrice,
-      //   maxPrice: _maxPrice,
-      // );
-      // setState(() => _products = products);
+      final q = _searchController.text.trim();
+      final params = <String>['per_page=200'];
+      if (q.isNotEmpty) {
+        params.add('search=${Uri.encodeQueryComponent(q)}');
+      }
+      params.add('min_price=${_minPrice.toStringAsFixed(0)}');
+      params.add('max_price=${_maxPrice.toStringAsFixed(0)}');
+
+      final payload = await _apiClient.get(
+        '/products?${params.join('&')}',
+        bearerToken: widget.token,
+      );
+
+      final data = payload['data'];
+      final products = data is List
+          ? data
+                .whereType<Map<String, dynamic>>()
+                .map(ProductModel.fromJson)
+                .toList(growable: false)
+          : <ProductModel>[];
+
+      if (!mounted) return;
+      setState(() {
+        _products
+          ..clear()
+          ..addAll(products);
+      });
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error loading products: $e')));
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -60,6 +91,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _searchController,
+                    onSubmitted: (_) => _loadProducts(),
                     decoration: InputDecoration(
                       hintText: 'Search products...',
                       prefixIcon: const Icon(Icons.search),
@@ -74,6 +107,17 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: _loadProducts,
+                  ),
+                ),
+                const SizedBox(width: 8),
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey.shade300),

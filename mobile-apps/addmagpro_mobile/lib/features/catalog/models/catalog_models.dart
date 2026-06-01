@@ -75,20 +75,15 @@ class ProductListResponse {
   final List<BrandFilterOption> availableBrands;
 
   factory ProductListResponse.fromJson(Map<String, dynamic> json) {
-    // Handle Laravel pagination response
     final data = json['data'] ?? json;
+    final pagination = json['pagination'] as Map<String, dynamic>?;
 
-    // Laravel returns pagination in 'meta' or in response properties directly
-    int currentPage = 1;
-    int lastPage = 1;
-
-    // Try to get pagination from Laravel's typical paginate() response
-    if (json['current_page'] is int) {
-      currentPage = json['current_page'] as int;
-    }
-    if (json['last_page'] is int) {
-      lastPage = json['last_page'] as int;
-    }
+    final currentPage =
+        _toInt(json['current_page']) ??
+        _toInt(pagination?['current_page']) ??
+        1;
+    final lastPage =
+        _toInt(json['last_page']) ?? _toInt(pagination?['last_page']) ?? 1;
 
     return ProductListResponse(
       items: data is List
@@ -301,12 +296,21 @@ class ListingListResponse {
   final int lastPage;
 
   factory ListingListResponse.fromJson(Map<String, dynamic> json) {
-    final data = json['data'];
+    final rootData = json['data'];
+    final data = rootData is Map<String, dynamic> ? rootData['data'] : rootData;
     final meta = json['meta'];
     final pagination =
         meta is Map<String, dynamic> &&
             meta['pagination'] is Map<String, dynamic>
         ? meta['pagination'] as Map<String, dynamic>
+        : null;
+    final inlinePagination =
+        rootData is Map<String, dynamic> &&
+            rootData['meta'] is Map<String, dynamic> &&
+            (rootData['meta'] as Map<String, dynamic>)['pagination']
+                is Map<String, dynamic>
+        ? (rootData['meta'] as Map<String, dynamic>)['pagination']
+              as Map<String, dynamic>
         : null;
 
     return ListingListResponse(
@@ -316,8 +320,16 @@ class ListingListResponse {
                 .map(ListingListItem.fromJson)
                 .toList(growable: false)
           : <ListingListItem>[],
-      currentPage: _toInt(pagination?['current_page']) ?? 1,
-      lastPage: _toInt(pagination?['last_page']) ?? 1,
+      currentPage:
+          _toInt(pagination?['current_page']) ??
+          _toInt(inlinePagination?['current_page']) ??
+          _toInt(json['current_page']) ??
+          1,
+      lastPage:
+          _toInt(pagination?['last_page']) ??
+          _toInt(inlinePagination?['last_page']) ??
+          _toInt(json['last_page']) ??
+          1,
     );
   }
 }
@@ -325,6 +337,7 @@ class ListingListResponse {
 class ListingListItem {
   ListingListItem({
     required this.id,
+    required this.type,
     required this.businessName,
     required this.slug,
     required this.city,
@@ -334,6 +347,7 @@ class ListingListItem {
   });
 
   final int id;
+  final String type;
   final String businessName;
   final String slug;
   final String? city;
@@ -343,18 +357,56 @@ class ListingListItem {
 
   factory ListingListItem.fromJson(Map<String, dynamic> json) {
     final category = json['category'];
+    final id =
+        _toInt(json['id']) ??
+        _toInt(json['service_id']) ??
+        _toInt(json['StoreID']) ??
+        _toInt(json['store_id']) ??
+        _toInt(json['vendor_id']) ??
+        0;
+    final type =
+        (json['type'] as String?) ??
+        (_toInt(json['service_id']) != null ? 'service' : null) ??
+        (_toInt(json['StoreID']) != null || _toInt(json['store_id']) != null
+            ? 'store'
+            : null) ??
+        (_toInt(json['vendor_id']) != null ? 'vendor' : null) ??
+        'listing';
+    final name =
+        (json['business_name'] as String?) ??
+        (json['shop_name'] as String?) ??
+        (json['StoreName'] as String?) ??
+        (json['store_name'] as String?) ??
+        (json['service_name'] as String?) ??
+        (json['name'] as String?) ??
+        '-';
+
     return ListingListItem(
-      id: _toInt(json['id']) ?? 0,
-      businessName: (json['business_name'] as String?) ?? '-',
-      slug: (json['slug'] as String?) ?? '',
-      city: json['city'] as String?,
+      id: id,
+      type: type,
+      businessName: name,
+      slug: (json['slug'] as String?) ?? (id > 0 ? '$type-$id' : ''),
+      city:
+          (json['city'] as String?) ??
+          (json['City'] as String?) ??
+          (json['district_name'] as String?),
       ratingAvg: _toDouble(json['rating_avg']),
       primaryImageUrl: AppConfig.resolveImageUrl(
-        json['primary_image_url'] as String? ?? json['image_url'] as String?,
+        json['primary_image_url'] as String? ??
+            json['image_url'] as String? ??
+            json['ImageURL'] as String? ??
+            json['StoreImage'] as String? ??
+            json['store_image'] as String? ??
+            json['service_category_image'] as String? ??
+            json['service_image'] as String? ??
+            json['vendor_banner_image'] as String? ??
+            json['shop_image'] as String?,
       ),
-      categoryName: category is Map<String, dynamic>
-          ? category['name'] as String?
-          : null,
+      categoryName:
+          (json['category_name'] as String?) ??
+          (category is Map<String, dynamic>
+              ? category['name'] as String?
+              : null),
     );
   }
 }
@@ -362,6 +414,7 @@ class ListingListItem {
 class ListingDetail {
   ListingDetail({
     required this.id,
+    required this.type,
     required this.businessName,
     required this.slug,
     required this.description,
@@ -375,6 +428,7 @@ class ListingDetail {
   });
 
   final int id;
+  final String type;
   final String businessName;
   final String slug;
   final String? description;
@@ -389,26 +443,80 @@ class ListingDetail {
   factory ListingDetail.fromJson(Map<String, dynamic> json) {
     final data = json['data'] as Map<String, dynamic>? ?? <String, dynamic>{};
     final images = data['images'];
+    final id =
+        _toInt(data['id']) ??
+        _toInt(data['service_id']) ??
+        _toInt(data['StoreID']) ??
+        _toInt(data['store_id']) ??
+        _toInt(data['vendor_id']) ??
+        0;
+    final type = (data['type'] as String?) ?? 'listing';
+    final fallbackImage = AppConfig.resolveImageUrl(
+      data['primary_image_url'] as String? ??
+          data['image_url'] as String? ??
+          data['ImageURL'] as String? ??
+          data['StoreImage'] as String? ??
+          data['store_image'] as String? ??
+          data['service_category_image'] as String? ??
+          data['service_image'] as String? ??
+          data['vendor_banner_image'] as String? ??
+          data['shop_image'] as String?,
+    );
+    final parsedImages = images is List
+        ? images
+              .map((e) {
+                if (e is String) {
+                  return AppConfig.resolveImageUrl(e);
+                }
+                if (e is Map<String, dynamic>) {
+                  return AppConfig.resolveImageUrl(
+                    e['image_url'] as String? ??
+                        e['url'] as String? ??
+                        e['path'] as String?,
+                  );
+                }
+                return null;
+              })
+              .whereType<String>()
+              .toList(growable: false)
+        : <String>[];
 
     return ListingDetail(
-      id: _toInt(data['id']) ?? 0,
-      businessName: (data['business_name'] as String?) ?? '-',
-      slug: (data['slug'] as String?) ?? '',
-      description: data['description'] as String?,
-      address: data['address'] as String?,
-      city: data['city'] as String?,
-      phone: data['phone'] as String?,
-      whatsapp: data['whatsapp'] as String?,
-      websiteUrl: data['website_url'] as String?,
-      images: images is List
-          ? images
-                .whereType<Map<String, dynamic>>()
-                .map(
-                  (e) => AppConfig.resolveImageUrl(e['image_url'] as String?),
-                )
-                .whereType<String>()
-                .toList(growable: false)
-          : <String>[],
+      id: id,
+      type: type,
+      businessName:
+          (data['business_name'] as String?) ??
+          (data['shop_name'] as String?) ??
+          (data['StoreName'] as String?) ??
+          (data['store_name'] as String?) ??
+          (data['service_name'] as String?) ??
+          (data['name'] as String?) ??
+          '-',
+      slug: (data['slug'] as String?) ?? (id > 0 ? '$type-$id' : ''),
+      description:
+          (data['description'] as String?) ??
+          (data['service_description'] as String?) ??
+          (data['store_description'] as String?),
+      address:
+          (data['address'] as String?) ??
+          (data['service_address'] as String?) ??
+          (data['store_address'] as String?) ??
+          (data['shop_address'] as String?),
+      city:
+          (data['city'] as String?) ??
+          (data['City'] as String?) ??
+          (data['district_name'] as String?),
+      phone:
+          (data['phone'] as String?) ??
+          (data['mobile'] as String?) ??
+          (data['contact_no'] as String?),
+      whatsapp:
+          (data['whatsapp'] as String?) ?? (data['whatsapp_number'] as String?),
+      websiteUrl:
+          (data['website_url'] as String?) ?? (data['website'] as String?),
+      images: parsedImages.isNotEmpty
+          ? parsedImages
+          : (fallbackImage != null ? <String>[fallbackImage] : <String>[]),
       ratingAvg: _toDouble(data['rating_avg']),
     );
   }

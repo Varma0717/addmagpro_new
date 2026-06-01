@@ -3,9 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
 use App\Models\Category;
-use App\Models\ProductReview;
+use App\Models\Product;
 use App\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -14,28 +13,34 @@ class ProductApiController extends Controller
 {
     use ApiResponse;
 
-    /**
-     * Get all products with filters
-     */
     public function index(Request $request)
     {
         try {
-            $perPage = $request->get('per_page', 12);
+            $perPage = max(1, min(100, (int) $request->get('per_page', 12)));
             $categoryId = $request->get('category_id');
-            $search = $request->get('search');
+            $categorySlug = $request->get('category_slug');
+            $search = trim((string) ($request->get('search') ?? $request->get('q') ?? ''));
             $minPrice = $request->get('min_price');
             $maxPrice = $request->get('max_price');
-            $sortBy = $request->get('sort_by', 'latest'); // latest, price_asc, price_desc
+            $sort = (string) ($request->get('sort') ?? $request->get('sort_by') ?? 'latest');
 
             $query = Product::query();
 
-            // Filter by category
-            if ($categoryId) {
-                $query->where('category_id', $categoryId);
+            if ($categoryId !== null && $categoryId !== '') {
+                $query->where('category_id', (int) $categoryId);
             }
 
-            // Search
-            if ($search) {
+            if ($categorySlug !== null && trim($categorySlug) !== '') {
+                $category = Category::query()->get()->first(function ($item) use ($categorySlug) {
+                    $name = (string) ($item->CategoryName ?? '');
+                    return Str::slug($name) === trim((string) $categorySlug);
+                });
+                if ($category) {
+                    $query->where('category_id', (int) $category->id);
+                }
+            }
+
+            if ($search !== '') {
                 $query->where(function ($q) use ($search) {
                     $q->where('product_name', 'like', "%{$search}%")
                         ->orWhere('product_description', 'like', "%{$search}%")
@@ -43,21 +48,23 @@ class ProductApiController extends Controller
                 });
             }
 
-            // Price range
-            if ($minPrice) {
-                $query->where('unit_price', '>=', $minPrice);
+            if ($minPrice !== null && $minPrice !== '') {
+                $query->where('unit_price', '>=', (float) $minPrice);
             }
-            if ($maxPrice) {
-                $query->where('unit_price', '<=', $maxPrice);
+            if ($maxPrice !== null && $maxPrice !== '') {
+                $query->where('unit_price', '<=', (float) $maxPrice);
             }
 
-            // Sorting
-            switch ($sortBy) {
+            switch ($sort) {
                 case 'price_asc':
                     $query->orderBy('unit_price', 'asc');
                     break;
                 case 'price_desc':
                     $query->orderBy('unit_price', 'desc');
+                    break;
+                case 'rating':
+                case 'popular':
+                    $query->orderBy('created_at', 'desc');
                     break;
                 case 'latest':
                 default:
@@ -66,346 +73,181 @@ class ProductApiController extends Controller
             }
 
             $products = $query->paginate($perPage);
+            $items = collect($products->items())
+                ->map(fn(Product $product) => $this->formatProductResponse($product))
+                ->values();
 
-            // Transform products using formatProductResponse
-            $transformedProducts = collect($products->items())->map(function ($product) {
-                return $this->formatProductResponse($product);
-            });
-            /** @var \Illuminate\Pagination\LengthAwarePaginator $products */
-            $products->setCollection($transformedProducts);
-
-            return $this->paginatedResponse($products, 'Products retrieved');
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                'Failed to fetch products: ' . $e->getMessage(),
-                [],
-                500
-            );
+            return response()->json([
+                'success' => true,
+                'data' => $items,
+                'pagination' => [
+                    'current_page' => $products->currentPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                    'last_page' => $products->lastPage(),
+                    'from' => $products->firstItem(),
+                    'to' => $products->lastItem(),
+                    'has_more' => $products->hasMorePages(),
+                ],
+                'message' => 'Products retrieved',
+                'timestamp' => now()->toIso8601String(),
+            ]);
+        } catch (\Throwable $e) {
+            return $this->errorResponse('Failed to fetch products: ' . $e->getMessage(), [], 500);
         }
     }
 
-    /**
-     * Get single product details
-     */
-    public function show(Request $request, int $id)
+    public function show(Request $request, string $slug)
     {
         try {
-            $product = Product::where('product_id', $id)->first();
+            $product = null;
+
+            if (is_numeric($slug)) {
+                $product = Product::where('product_id', (int) $slug)->first();
+            }
+
+            if (!$product) {
+                $product = Product::query()
+                    ->get()
+                    ->first(function ($item) use ($slug) {
+                        $derived = Str::slug((string) $item->product_name);
+                        return $derived === $slug;
+                    });
+            }
 
             if (!$product) {
                 return $this->notFoundResponse('Product not found');
             }
 
-            return $this->successResponse([
-                'product' => $this->formatProductResponse($product),
-                'seller' => $product->vendor_id ? [
-                    'id' => $product->vendor_id,
-                    'name' => 'Vendor ' . $product->vendor_id,
-                ] : null,
-            ], 'Product details retrieved');
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                'Failed to fetch product: ' . $e->getMessage(),
-                [],
-                500
-            );
+            $formatted = $this->formatProductResponse($product);
+            $formatted['images'] = array_values(array_filter([
+                $formatted['primary_image_url'] ?? null,
+            ]));
+            $formatted['reviews'] = [];
+            $formatted['stock'] = 999;
+
+            return $this->successResponse($formatted, 'Product details retrieved');
+        } catch (\Throwable $e) {
+            return $this->errorResponse('Failed to fetch product: ' . $e->getMessage(), [], 500);
         }
     }
 
-    /**
-     * Get all categories
-     */
     public function categories(Request $request)
     {
         try {
             $categories = Category::query()
+                ->orderBy('CategoryName')
                 ->get()
                 ->map(function ($category) {
+                    $name = (string) ($category->CategoryName ?? '');
                     return [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'slug' => $category->slug,
-                        'image_url' => $category->image_url,
-                        'product_count' => $category->products()->count(),
-                        'subcategories' => $category->children()
-                            ->get()
-                            ->map(function ($child) {
-                                return [
-                                    'id' => $child->id,
-                                    'name' => $child->name,
-                                    'slug' => $child->slug,
-                                    'product_count' => $child->products()->count(),
-                                ];
-                            }),
+                        'id' => (int) $category->id,
+                        'name' => $name,
+                        'slug' => Str::slug($name),
+                        'image_url' => $category->ImageURL,
+                        'product_count' => Product::where('category_id', $category->id)->count(),
+                        'subcategories' => [],
                     ];
-                });
+                })
+                ->values();
 
             return $this->successResponse($categories, 'Categories retrieved');
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                'Failed to fetch categories: ' . $e->getMessage(),
-                [],
-                500
-            );
+        } catch (\Throwable $e) {
+            return $this->errorResponse('Failed to fetch categories: ' . $e->getMessage(), [], 500);
         }
     }
 
-    /**
-     * Get products by category
-     */
     public function byCategory(Request $request, string $categorySlug)
     {
         try {
-            $category = Category::where('slug', $categorySlug)
-                ->first();
+            $category = Category::query()->get()->first(function ($item) use ($categorySlug) {
+                $name = (string) ($item->CategoryName ?? '');
+                return Str::slug($name) === $categorySlug;
+            });
 
             if (!$category) {
                 return $this->notFoundResponse('Category not found');
             }
 
-            $perPage = $request->get('per_page', 12);
-            $sortBy = $request->get('sort_by', 'latest');
-            $minPrice = $request->get('min_price');
-            $maxPrice = $request->get('max_price');
-
-            $query = $category->products();
-
-            if ($minPrice) {
-                $query->where('unit_price', '>=', $minPrice);
-            }
-            if ($maxPrice) {
-                $query->where('unit_price', '<=', $maxPrice);
-            }
-
-            switch ($sortBy) {
-                case 'popular':
-                    $query->orderBy('review_count', 'desc');
-                    break;
-                case 'price_asc':
-                    $query->orderBy('price', 'asc');
-                    break;
-                case 'price_desc':
-                    $query->orderBy('price', 'desc');
-                    break;
-                case 'rating':
-                    $query->orderBy('rating', 'desc');
-                    break;
-                default:
-                    $query->latest();
-                    break;
-            }
-
-            $products = $query->paginate($perPage);
-
-            // Transform products using formatProductResponse
-            $transformedProducts = collect($products->items())->map(function ($product) {
-                return $this->formatProductResponse($product);
-            });
-            /** @var \Illuminate\Pagination\LengthAwarePaginator $products */
-            $products->setCollection($transformedProducts);
-
-            return $this->paginatedResponse($products, 'Category products retrieved');
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                'Failed to fetch category products: ' . $e->getMessage(),
-                [],
-                500
-            );
+            $request->merge(['category_id' => (int) $category->id]);
+            return $this->index($request);
+        } catch (\Throwable $e) {
+            return $this->errorResponse('Failed to fetch category products: ' . $e->getMessage(), [], 500);
         }
     }
 
-    /**
-     * Search products
-     */
     public function search(Request $request)
     {
-        $query = $request->get('q');
-
-        if (!$query || strlen($query) < 2) {
-            return $this->errorResponse('Search query must be at least 2 characters', [], 400);
-        }
-
-        try {
-            $perPage = $request->get('per_page', 12);
-
-            $products = Product::where('is_active', true)
-                ->inStock()
-                ->where(function ($q) use ($query) {
-                    $q->where('name', 'like', "%{$query}%")
-                        ->orWhere('description', 'like', "%{$query}%")
-                        ->orWhere('tags', 'like', "%{$query}%");
-                })
-                ->latest()
-                ->paginate($perPage);
-
-            // Transform products using formatProductResponse
-            $transformedProducts = collect($products->items())->map(function ($product) {
-                return $this->formatProductResponse($product);
-            });
-            /** @var \Illuminate\Pagination\LengthAwarePaginator $products */
-            $products->setCollection($transformedProducts);
-
-            return $this->paginatedResponse($products, 'Search results retrieved');
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                'Failed to search products: ' . $e->getMessage(),
-                [],
-                500
-            );
-        }
+        return $this->index($request);
     }
 
-    /**
-     * Get search suggestions
-     */
     public function suggestions(Request $request)
     {
-        $query = $request->get('q');
-
-        if (!$query || strlen($query) < 2) {
+        $query = trim((string) $request->get('q', ''));
+        if (mb_strlen($query) < 2) {
             return $this->successResponse([], 'No suggestions');
         }
 
         try {
-            $suggestions = Product::where('is_active', true)
+            $items = Product::query()
                 ->where(function ($q) use ($query) {
-                    $q->where('name', 'like', "%{$query}%")
-                        ->orWhere('tags', 'like', "%{$query}%");
+                    $q->where('product_name', 'like', "%{$query}%")
+                        ->orWhere('item_code', 'like', "%{$query}%");
                 })
-                ->distinct()
                 ->limit(10)
-                ->get(['name'])
-                ->map(fn($p) => ['text' => $p->name]);
+                ->get(['product_name'])
+                ->map(fn($product) => ['text' => (string) $product->product_name])
+                ->values();
 
-            return $this->successResponse($suggestions, 'Suggestions retrieved');
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                'Failed to fetch suggestions: ' . $e->getMessage(),
-                [],
-                500
-            );
+            return $this->successResponse($items, 'Suggestions retrieved');
+        } catch (\Throwable $e) {
+            return $this->errorResponse('Failed to fetch suggestions: ' . $e->getMessage(), [], 500);
         }
     }
 
-    /**
-     * Get price range for filters
-     */
     public function priceRange(Request $request)
     {
         try {
             $categoryId = $request->get('category_id');
-
-            $query = Product::where('is_active', true)->inStock();
-
-            if ($categoryId) {
-                $query->where('category_id', $categoryId);
+            $query = Product::query();
+            if ($categoryId !== null && $categoryId !== '') {
+                $query->where('category_id', (int) $categoryId);
             }
 
-            $minPrice = $query->min('price');
-            $maxPrice = $query->max('price');
+            $minPrice = (float) ($query->min('unit_price') ?? 0);
+            $maxPrice = (float) ($query->max('unit_price') ?? 0);
 
             return $this->successResponse([
-                'min_price' => (float) $minPrice,
-                'max_price' => (float) $maxPrice,
+                'min_price' => $minPrice,
+                'max_price' => $maxPrice,
             ], 'Price range retrieved');
-        } catch (\Exception $e) {
-            return $this->errorResponse(
-                'Failed to fetch price range: ' . $e->getMessage(),
-                [],
-                500
-            );
+        } catch (\Throwable $e) {
+            return $this->errorResponse('Failed to fetch price range: ' . $e->getMessage(), [], 500);
         }
     }
 
-    // Helper Methods
-
-    /**
-     * Format product response
-     */
     private function formatProductResponse(Product $product): array
     {
-        // Get primary image - safely handle missing product_images table
-        $imageUrl = null;
-        try {
-            $primaryImage = $product->images()->first();
-            if ($primaryImage) {
-                $imageUrl = $primaryImage->image_url ??
-                    $primaryImage->image_path ??
-                    $primaryImage->url ?? null;
-            }
-        } catch (\Exception $e) {
-            // product_images table might not exist, use legacy column
-        }
-
-        // Fallback to legacy product_images column
-        if (!$imageUrl) {
-            $imageUrl = $product->product_images ?? null;
-        }
-
-        // Calculate effective price (with discount if any)
-        $effectivePrice = (float) $product->unit_price;
-        if ($product->discount_type && $product->discount_value) {
-            if ($product->discount_type === 'percentage') {
-                $effectivePrice = $effectivePrice * (1 - ($product->discount_value / 100));
-            } else {
-                $effectivePrice = $effectivePrice - $product->discount_value;
-            }
-        }
-
-        // Get average rating - safely handle missing product_reviews table
-        $avgRating = null;
-        try {
-            $avgRating = $product->reviews()->avg('rating');
-        } catch (\Exception $e) {
-            // product_reviews table might not exist
-        }
+        $image = trim((string) ($product->product_images ?? ''));
+        $slug = Str::slug((string) $product->product_name);
 
         return [
-            'id' => $product->product_id,
-            'product_id' => $product->product_id,
-            'name' => $product->product_name,
-            'slug' => $product->slug ?? Str::slug($product->product_name),
-            'description' => $product->product_description,
-            'category_id' => $product->category_id,
-            'vendor_id' => $product->vendor_id,
-            'brand_id' => $product->brand_id,
-            'brand_name' => $product->brand_id ? 'Brand ' . $product->brand_id : null,
-            'item_code' => $product->item_code,
-            'price' => (float) $product->unit_price,
-            'effective_price' => round($effectivePrice, 2),
-            'cost_price' => (float) $product->purchase_price,
-            'discount_type' => $product->discount_type,
-            'discount_value' => $product->discount_value,
-            'stock_quantity' => (int) $product->quantity,
-            'primary_image_url' => $imageUrl,
-            'image_url' => $imageUrl,
-            'rating_avg' => $avgRating ? round($avgRating, 1) : null,
-            'is_active' => (bool) $product->is_active,
-            'created_at' => $product->created_at?->toIso8601String(),
+            'id' => (int) $product->product_id,
+            'product_id' => (int) $product->product_id,
+            'name' => (string) ($product->product_name ?? '-'),
+            'slug' => $slug,
+            'description' => (string) ($product->product_description ?? ''),
+            'category_id' => (int) ($product->category_id ?? 0),
+            'vendor_id' => (int) ($product->vendor_id ?? 0),
+            'brand_id' => (int) ($product->brand_id ?? 0),
+            'item_code' => (string) ($product->item_code ?? ''),
+            'price' => (float) ($product->unit_price ?? 0),
+            'effective_price' => (float) ($product->unit_price ?? 0),
+            'cost_price' => (float) ($product->purchase_price ?? 0),
+            'primary_image_url' => $image !== '' ? $image : null,
+            'image_url' => $image !== '' ? $image : null,
+            'rating_avg' => null,
+            'created_at' => $product->created_at ? $product->created_at->toIso8601String() : null,
         ];
-    }
-
-    /**
-     * Get rating distribution
-     */
-    private function getRatingDistribution($productId): array
-    {
-        $distribution = [
-            5 => 0,
-            4 => 0,
-            3 => 0,
-            2 => 0,
-            1 => 0,
-        ];
-
-        $reviews = ProductReview::where('product_id', $productId)->get();
-
-        foreach ($reviews as $review) {
-            if (isset($distribution[$review->rating])) {
-                $distribution[$review->rating]++;
-            }
-        }
-
-        return $distribution;
     }
 }

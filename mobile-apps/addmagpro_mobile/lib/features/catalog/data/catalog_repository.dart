@@ -54,10 +54,14 @@ class CatalogRepository {
   Future<ListingListResponse> fetchListings({
     String? token,
     int page = 1,
+    String? type,
     int? stateId,
     int? districtId,
   }) async {
     final params = <String>['page=$page'];
+    if (type != null && type.trim().isNotEmpty) {
+      params.add('type=${Uri.encodeQueryComponent(type.trim())}');
+    }
     if (stateId != null) {
       params.add('state_id=$stateId');
     }

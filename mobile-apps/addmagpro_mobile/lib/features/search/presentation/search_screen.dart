@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../../app_state.dart';
 import '../../../core/network/api_client.dart';
@@ -242,23 +243,37 @@ class _SearchScreenState extends State<SearchScreen> {
                             );
                           }
                         },
-                        leading: Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
+                        leading: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            width: 44,
+                            height: 44,
                             color: item.isProduct
                                 ? AppColors.primaryLight
                                 : AppColors.success.withAlpha(20),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(
-                            item.isProduct
-                                ? Icons.shopping_bag_outlined
-                                : Icons.storefront_outlined,
-                            color: item.isProduct
-                                ? AppColors.primary
-                                : AppColors.success,
-                            size: 20,
+                            child: item.primaryImageUrl != null
+                                ? CachedNetworkImage(
+                                    imageUrl: item.primaryImageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, _, _) => Icon(
+                                      item.isProduct
+                                          ? Icons.shopping_bag_outlined
+                                          : Icons.storefront_outlined,
+                                      color: item.isProduct
+                                          ? AppColors.primary
+                                          : AppColors.success,
+                                      size: 20,
+                                    ),
+                                  )
+                                : Icon(
+                                    item.isProduct
+                                        ? Icons.shopping_bag_outlined
+                                        : Icons.storefront_outlined,
+                                    color: item.isProduct
+                                        ? AppColors.primary
+                                        : AppColors.success,
+                                    size: 20,
+                                  ),
                           ),
                         ),
                         title: Text(
@@ -270,7 +285,11 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
                         subtitle: Text(
-                          item.city ?? item.subtitle ?? item.type,
+                          item.city ??
+                              item.subtitle ??
+                              (item.isProduct
+                                  ? 'Product'
+                                  : 'Service / Listing'),
                           style: const TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 12,
