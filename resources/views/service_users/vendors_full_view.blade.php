@@ -4,10 +4,12 @@
 <section class="breadscrumb-section pt-0">
     <div class="custom-container">
         <div class="breadcrumb-head">
-            <nav><ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('welcome_page') }}">Home</a></li>
-                <li class="breadcrumb-item active">Vendor Shops</li>
-            </ol></nav>
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('welcome_page') }}">Home</a></li>
+                    <li class="breadcrumb-item active">Vendor Shops</li>
+                </ol>
+            </nav>
         </div>
     </div>
 </section>
@@ -19,15 +21,31 @@
             <div class="col-md-6 col-lg-4">
                 <a href="{{ route('products_list_vendor', $vendor->vendor_id) }}" class="text-decoration-none">
                     <div class="card h-100 border-0 shadow-sm" style="border-radius:12px;overflow:hidden;">
-                        @if($vendor->vendor_banner_image ?? '')
-                        <img src="{{ asset($vendor->vendor_banner_image) }}" alt="{{ $vendor->shop_name ?? 'Vendor' }}" style="width:100%;height:200px;object-fit:cover;">
+                        @php
+                        $vendorImage = $vendor->vendor_banner_image
+                        ?? $vendor->ImageURL
+                        ?? $vendor->banner_image
+                        ?? $vendor->shop_image
+                        ?? null;
+                        $vendorImageUrl = $vendorImage
+                        ? (str_starts_with($vendorImage, 'http://') || str_starts_with($vendorImage, 'https://')
+                        ? $vendorImage
+                        : asset($vendorImage))
+                        : null;
+                        $vendorShopName = $vendor->shop_name
+                        ?? $vendor->business_name
+                        ?? $vendor->vendor_name
+                        ?? 'Vendor Shop';
+                        @endphp
+                        @if($vendorImageUrl)
+                        <img src="{{ $vendorImageUrl }}" alt="{{ $vendorShopName }}" style="width:100%;height:200px;object-fit:cover;">
                         @else
                         <div style="width:100%;height:200px;background:linear-gradient(135deg,var(--theme-color),#7a2800);display:flex;align-items:center;justify-content:center;">
                             <i class="ri-store-2-line" style="font-size:3rem;color:#fff;"></i>
                         </div>
                         @endif
                         <div class="card-body">
-                            <h6 class="fw-bold mb-1" style="color:var(--title-color);">{{ $vendor->shop_name ?? 'Vendor Shop' }}</h6>
+                            <h6 class="fw-bold mb-1" style="color:var(--title-color);">{{ $vendorShopName }}</h6>
                             @if($vendor->description ?? '')
                             <p class="text-muted mb-0" style="font-size:.85rem;">{{ Str::limit($vendor->description, 80) }}</p>
                             @endif
