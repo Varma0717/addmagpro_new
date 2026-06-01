@@ -75,4 +75,48 @@ class WalletRepository {
       },
     );
   }
+
+  Future<Map<String, dynamic>> sendMoney(
+    String token, {
+    required String recipientIdentifier,
+    required double amount,
+    String? description,
+  }) async {
+    final payload = await _apiClient.post(
+      '/account/wallet/send-money',
+      bearerToken: token,
+      body: <String, dynamic>{
+        'recipient_identifier': recipientIdentifier,
+        'amount': amount,
+        'description': (description ?? '').trim().isEmpty ? null : description,
+      },
+    );
+
+    final data = payload['data'];
+    return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
+
+  Future<Map<String, dynamic>> selfTransfer(
+    String token, {
+    required double amount,
+    required String accountHolderName,
+    required String accountNumber,
+    required String ifscCode,
+    String? description,
+  }) async {
+    final payload = await _apiClient.post(
+      '/account/wallet/self-transfer',
+      bearerToken: token,
+      body: <String, dynamic>{
+        'amount': amount,
+        'account_holder_name': accountHolderName,
+        'account_number': accountNumber,
+        'ifsc_code': ifscCode,
+        'description': (description ?? '').trim().isEmpty ? null : description,
+      },
+    );
+
+    final data = payload['data'];
+    return data is Map<String, dynamic> ? data : <String, dynamic>{};
+  }
 }

@@ -80,10 +80,17 @@ class HomeBannerItem {
 
   factory HomeBannerItem.fromJson(Map<String, dynamic> json) {
     return HomeBannerItem(
-      id: _toInt(json['id']) ?? 0,
-      title: json['title'] as String?,
-      subtitle: json['subtitle'] as String? ?? json['description'] as String?,
-      imageUrl: AppConfig.resolveImageUrl(json['image_url'] as String?),
+      id: _toInt(json['id']) ?? _toInt(json['banner_id']) ?? 0,
+      title: json['title'] as String? ?? json['banner_title'] as String?,
+      subtitle:
+          json['subtitle'] as String? ??
+          json['description'] as String? ??
+          json['banner_description'] as String?,
+      imageUrl: AppConfig.resolveImageUrl(
+        json['image_url'] as String? ??
+            json['banner_image'] as String? ??
+            json['event_banner_image'] as String?,
+      ),
       linkType: json['link_type'] as String? ?? json['type'] as String?,
       linkValue: json['link_value'] as String? ?? json['action_url'] as String?,
     );
@@ -106,12 +113,23 @@ class HomeCategoryItem {
   final String? imageUrl;
 
   factory HomeCategoryItem.fromJson(Map<String, dynamic> json) {
+    final name =
+        (json['name'] as String?) ??
+        (json['CategoryName'] as String?) ??
+        (json['category_name'] as String?);
+
+    final id = _toInt(json['id']) ?? _toInt(json['category_id']) ?? 0;
+
     return HomeCategoryItem(
-      id: _toInt(json['id']) ?? 0,
-      name: (json['name'] as String?) ?? '-',
-      slug: (json['slug'] as String?) ?? '',
+      id: id,
+      name: (name != null && name.trim().isNotEmpty) ? name : 'Category $id',
+      slug: (json['slug'] as String?) ?? _slugify(name),
       type: (json['type'] as String?) ?? '',
-      imageUrl: AppConfig.resolveImageUrl(json['image_url'] as String?),
+      imageUrl: AppConfig.resolveImageUrl(
+        json['image_url'] as String? ??
+            json['ImageURL'] as String? ??
+            json['category_image'] as String?,
+      ),
     );
   }
 }
@@ -236,12 +254,26 @@ class HomeServiceItem {
   final String? actionUrl;
 
   factory HomeServiceItem.fromJson(Map<String, dynamic> json) {
+    final name =
+        (json['name'] as String?) ??
+        (json['service_name'] as String?) ??
+        (json['classified_name'] as String?);
+
+    final id = _toInt(json['id']) ?? _toInt(json['service_id']) ?? 0;
+
     return HomeServiceItem(
-      id: _toInt(json['id']) ?? 0,
-      name: (json['name'] as String?) ?? '-',
-      slug: (json['slug'] as String?) ?? '',
-      iconUrl: AppConfig.resolveImageUrl(json['icon_url'] as String?),
-      actionUrl: json['action_url'] as String?,
+      id: id,
+      name: (name != null && name.trim().isNotEmpty) ? name : 'Service $id',
+      slug: (json['slug'] as String?) ?? _slugify(name),
+      iconUrl: AppConfig.resolveImageUrl(
+        json['icon_url'] as String? ??
+            json['service_image'] as String? ??
+            json['ImageURL'] as String?,
+      ),
+      actionUrl:
+          json['action_url'] as String? ??
+          json['service_url'] as String? ??
+          json['redirect_url'] as String?,
     );
   }
 }
@@ -297,4 +329,14 @@ double? _toDouble(dynamic value) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value);
   return null;
+}
+
+String _slugify(String? value) {
+  if (value == null) return '';
+  final normalized = value
+      .trim()
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+      .replaceAll(RegExp(r'^-+|-+$'), '');
+  return normalized;
 }

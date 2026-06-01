@@ -74,11 +74,12 @@ class _ProductListScreenState extends State<ProductListScreen> {
       if (!mounted) return;
       setState(() => _error = error.toString());
     } finally {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _loading = false;
           _loadingMore = false;
         });
+      }
     }
   }
 
@@ -283,8 +284,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 : NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
                       if (notification.metrics.pixels >
-                          notification.metrics.maxScrollExtent - 200)
+                          notification.metrics.maxScrollExtent - 200) {
                         _loadMore();
+                      }
                       return false;
                     },
                     child: RefreshIndicator(
@@ -310,10 +312,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
       ),
       itemCount: _items.length + (_loadingMore ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index >= _items.length)
+        if (index >= _items.length) {
           return const Center(
             child: CircularProgressIndicator(color: AppColors.primary),
           );
+        }
         final item = _items[index];
         return _ProductGridCard(
           product: item,
@@ -333,13 +336,14 @@ class _ProductListScreenState extends State<ProductListScreen> {
       padding: const EdgeInsets.all(12),
       itemCount: _items.length + (_loadingMore ? 1 : 0),
       itemBuilder: (context, index) {
-        if (index >= _items.length)
+        if (index >= _items.length) {
           return const Padding(
             padding: EdgeInsets.all(12),
             child: Center(
               child: CircularProgressIndicator(color: AppColors.primary),
             ),
           );
+        }
         final item = _items[index];
         return Container(
           margin: const EdgeInsets.only(bottom: 10),

@@ -40,42 +40,58 @@ class HomeApiController extends Controller
                 ->limit(5)
                 ->get()
                 ->map(function ($banner) {
+                    $title = $this->firstString($banner, ['title', 'banner_title', 'name']);
+                    $description = $this->firstString($banner, ['description', 'subtitle', 'banner_description']);
+                    $imageUrl = $this->firstString($banner, ['image_url', 'banner_image', 'event_banner_image', 'ads_banner_image', 'ImageURL']);
+                    $actionUrl = $this->firstString($banner, ['action_url', 'redirect_url', 'link_url']);
+                    $type = $this->firstString($banner, ['banner_type', 'type']);
+
                     return [
-                        'id' => $banner->id,
-                        'title' => $banner->title,
-                        'description' => $banner->description,
-                        'image_url' => $banner->image_url,
-                        'action_url' => $banner->action_url,
-                        'type' => $banner->banner_type,
+                        'id' => $this->firstInt($banner, ['id', 'banner_id']),
+                        'title' => $title,
+                        'description' => $description,
+                        'image_url' => $imageUrl,
+                        'action_url' => $actionUrl,
+                        'type' => $type,
                     ];
-                });
+                })
+                ->filter(function ($banner) {
+                    return !empty($banner['image_url']) || !empty($banner['title']);
+                })
+                ->values();
 
             // Get categories
             $categories = Category::query()
                 ->limit(8)
                 ->get()
                 ->map(function ($category) {
+                    $name = $this->firstString($category, ['name', 'CategoryName', 'category_name', 'title']);
+
                     return [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'slug' => $category->slug,
-                        'image_url' => $category->image_url,
+                        'id' => $this->firstInt($category, ['id', 'category_id']),
+                        'name' => $name,
+                        'slug' => $this->firstString($category, ['slug']) ?? Str::slug((string) $name),
+                        'image_url' => $this->firstString($category, ['image_url', 'ImageURL', 'category_image', 'icon_url']),
                     ];
-                });
+                })
+                ->values();
 
             // Get services (12 from mockup)
             $services = Service::query()
                 ->limit(12)
                 ->get()
                 ->map(function ($service) {
+                    $name = $this->firstString($service, ['name', 'service_name', 'classified_name', 'title']);
+
                     return [
-                        'id' => $service->id,
-                        'name' => $service->name,
-                        'slug' => $service->slug,
-                        'icon_url' => $service->icon_url,
-                        'action_url' => $service->action_url,
+                        'id' => $this->firstInt($service, ['id', 'service_id']),
+                        'name' => $name,
+                        'slug' => $this->firstString($service, ['slug']) ?? Str::slug((string) $name),
+                        'icon_url' => $this->firstString($service, ['icon_url', 'service_image', 'ImageURL', 'banner_image']),
+                        'action_url' => $this->firstString($service, ['action_url', 'service_url', 'redirect_url']),
                     ];
-                });
+                })
+                ->values();
 
             // Get featured products
             $featuredProducts = Product::query()
@@ -276,5 +292,40 @@ class HomeApiController extends Controller
             'image_url' => $product->product_images,
             'rating_avg' => null,
         ];
+    }
+
+    private function firstString(object $model, array $keys): ?string
+    {
+        foreach ($keys as $key) {
+            $value = data_get($model, $key);
+            if (!is_string($value)) {
+                if (is_numeric($value)) {
+                    return (string) $value;
+                }
+                continue;
+            }
+
+            $trimmed = trim($value);
+            if ($trimmed !== '') {
+                return $trimmed;
+            }
+        }
+
+        return null;
+    }
+
+    private function firstInt(object $model, array $keys): ?int
+    {
+        foreach ($keys as $key) {
+            $value = data_get($model, $key);
+            if (is_int($value)) {
+                return $value;
+            }
+            if (is_numeric($value)) {
+                return (int) $value;
+            }
+        }
+
+        return null;
     }
 }

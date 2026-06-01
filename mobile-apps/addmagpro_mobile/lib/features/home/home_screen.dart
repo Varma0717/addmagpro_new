@@ -421,6 +421,25 @@ class _DashboardViewState extends State<_DashboardView> {
 
     final feed = _feed!;
     final user = widget.appState.currentUser;
+    final validBannerImages = feed.banners
+        .where((banner) => (banner.imageUrl ?? '').trim().isNotEmpty)
+        .toList(growable: false);
+    final fallbackBannerImages = feed.featuredProducts
+        .where((product) => (product.primaryImageUrl ?? '').trim().isNotEmpty)
+        .map(
+          (product) => HomeBannerItem(
+            id: product.id,
+            title: product.name,
+            subtitle: product.category,
+            imageUrl: product.primaryImageUrl,
+            linkType: 'product',
+            linkValue: product.slug,
+          ),
+        )
+        .toList(growable: false);
+    final bannerItems = validBannerImages.isNotEmpty
+        ? validBannerImages
+        : fallbackBannerImages;
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -429,16 +448,16 @@ class _DashboardViewState extends State<_DashboardView> {
         padding: EdgeInsets.zero,
         children: [
           // ── Banner Carousel ──
-          if (feed.banners.isNotEmpty) ...[
+          if (bannerItems.isNotEmpty) ...[
             SizedBox(
               height: 180,
               child: Stack(
                 children: [
                   PageView.builder(
                     controller: _bannerController,
-                    itemCount: feed.banners.length,
+                    itemCount: bannerItems.length,
                     itemBuilder: (_, index) {
-                      final banner = feed.banners[index];
+                      final banner = bannerItems[index];
                       return Container(
                         margin: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -470,7 +489,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       );
                     },
                   ),
-                  if (feed.banners.length > 1)
+                  if (bannerItems.length > 1)
                     Positioned(
                       bottom: 16,
                       left: 0,
@@ -478,7 +497,7 @@ class _DashboardViewState extends State<_DashboardView> {
                       child: Center(
                         child: SmoothPageIndicator(
                           controller: _bannerController,
-                          count: feed.banners.length,
+                          count: bannerItems.length,
                           effect: const WormEffect(
                             dotWidth: 7,
                             dotHeight: 7,
