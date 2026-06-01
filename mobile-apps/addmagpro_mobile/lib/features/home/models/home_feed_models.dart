@@ -154,11 +154,16 @@ class HomeProductItem {
   final String? primaryImageUrl;
 
   factory HomeProductItem.fromJson(Map<String, dynamic> json) {
+    final id = _toInt(json['id']) ?? _toInt(json['product_id']) ?? 0;
+    final name =
+        (json['name'] as String?) ?? (json['product_name'] as String?) ?? '-';
+    final slugValue =
+        (json['slug'] as String?) ?? (id > 0 ? id.toString() : _slugify(name));
+
     return HomeProductItem(
-      id: _toInt(json['id']) ?? 0,
-      name:
-          (json['name'] as String?) ?? (json['product_name'] as String?) ?? '-',
-      slug: (json['slug'] as String?) ?? '',
+      id: id,
+      name: name,
+      slug: slugValue,
       effectivePrice:
           _toDouble(json['effective_price']) ??
           _toDouble(json['price']) ??

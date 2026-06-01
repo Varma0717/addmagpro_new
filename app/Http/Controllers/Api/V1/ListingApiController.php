@@ -190,7 +190,11 @@ class ListingApiController extends Controller
 
     private function findService(int $id): ?array
     {
-        $row = DB::table('services')->where('service_id', $id)->orWhere('id', $id)->first();
+        $query = DB::table('services')->where('service_id', $id);
+        if ($this->hasColumn('services', 'id')) {
+            $query->orWhere('id', $id);
+        }
+        $row = $query->first();
         if (!$row) return null;
 
         $name = $this->firstString($row, ['service_name', 'name', 'classified_name']) ?? "Service {$id}";
@@ -208,13 +212,21 @@ class ListingApiController extends Controller
             'whatsapp' => $this->firstString($row, ['whatsapp', 'whatsapp_number']),
             'website_url' => $this->firstString($row, ['website_url', 'website']),
             'rating_avg' => null,
+            'primary_image_url' => $image,
             'images' => $image ? [['image_url' => $image]] : [],
         ];
     }
 
     private function findStore(int $id): ?array
     {
-        $row = DB::table('stores')->where('StoreID', $id)->orWhere('store_id', $id)->orWhere('id', $id)->first();
+        $query = DB::table('stores')->where('StoreID', $id);
+        if ($this->hasColumn('stores', 'store_id')) {
+            $query->orWhere('store_id', $id);
+        }
+        if ($this->hasColumn('stores', 'id')) {
+            $query->orWhere('id', $id);
+        }
+        $row = $query->first();
         if (!$row) return null;
 
         $name = $this->firstString($row, ['StoreName', 'store_name', 'name']) ?? "Store {$id}";
@@ -232,6 +244,7 @@ class ListingApiController extends Controller
             'whatsapp' => $this->firstString($row, ['whatsapp', 'whatsapp_number']),
             'website_url' => $this->firstString($row, ['website_url', 'website']),
             'rating_avg' => null,
+            'primary_image_url' => $image,
             'images' => $image ? [['image_url' => $image]] : [],
         ];
     }
@@ -261,6 +274,7 @@ class ListingApiController extends Controller
             'whatsapp' => $this->firstString($row, ['whatsapp', 'whatsapp_number']),
             'website_url' => $this->firstString($row, ['website_url', 'website']),
             'rating_avg' => null,
+            'primary_image_url' => $image,
             'images' => $image ? [['image_url' => $image]] : [],
         ];
     }
@@ -268,6 +282,7 @@ class ListingApiController extends Controller
     private function parseSlug(string $slug): array
     {
         $normalized = strtolower(trim($slug));
+
         foreach (['service', 'store', 'vendor'] as $type) {
             if (Str::startsWith($normalized, $type . '-')) {
                 $id = (int) str_replace($type . '-', '', $normalized);

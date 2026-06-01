@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../app_state.dart';
@@ -313,6 +315,8 @@ class _DashboardView extends StatefulWidget {
 class _DashboardViewState extends State<_DashboardView> {
   late final HomeRepository _repository;
   final PageController _bannerController = PageController();
+  final PageController _promoController = PageController();
+  final stt.SpeechToText _speech = stt.SpeechToText();
   Timer? _bannerTimer;
   bool _loading = true;
   String? _error;
@@ -352,7 +356,75 @@ class _DashboardViewState extends State<_DashboardView> {
   void dispose() {
     _bannerTimer?.cancel();
     _bannerController.dispose();
+    _promoController.dispose();
     super.dispose();
+  }
+
+  void _openSearch({String? query}) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => SearchScreen(
+          appState: widget.appState,
+          token: widget.token,
+          initialQuery: query,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _startVoiceSearch() async {
+    final available = await _speech.initialize();
+    if (!available) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Voice search is unavailable on this device.'),
+        ),
+      );
+      return;
+    }
+
+    String spokenText = '';
+    await _speech.listen(
+      onResult: (result) {
+        spokenText = result.recognizedWords;
+      },
+    );
+
+    await Future<void>.delayed(const Duration(seconds: 2));
+    await _speech.stop();
+    if (!mounted) return;
+
+    if (spokenText.trim().length >= 2) {
+      _openSearch(query: spokenText.trim());
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not detect enough voice input.')),
+      );
+    }
+  }
+
+  Future<void> _startBarcodeScan() async {
+    bool handled = false;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => SizedBox(
+        height: MediaQuery.of(context).size.height * 0.72,
+        child: MobileScanner(
+          onDetect: (capture) {
+            if (handled) return;
+            final code = capture.barcodes.isNotEmpty
+                ? (capture.barcodes.first.rawValue ?? '').trim()
+                : '';
+            if (code.isEmpty) return;
+            handled = true;
+            Navigator.of(context).pop();
+            _openSearch(query: code);
+          },
+        ),
+      ),
+    );
   }
 
   Future<void> _load() async {
@@ -581,6 +653,56 @@ class _DashboardViewState extends State<_DashboardView> {
             ),
           ),
 
+          const SizedBox(height: 14),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => _openSearch(),
+                    child: Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.borderLight),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.search_rounded,
+                            color: AppColors.textMuted,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Search products and services',
+                              style: TextStyle(color: AppColors.textMuted),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                _QuickActionIcon(
+                  icon: Icons.mic_none_rounded,
+                  onTap: _startVoiceSearch,
+                ),
+                const SizedBox(width: 8),
+                _QuickActionIcon(
+                  icon: Icons.qr_code_scanner_rounded,
+                  onTap: _startBarcodeScan,
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 24),
 
           // ── Services ──
@@ -617,11 +739,8 @@ class _DashboardViewState extends State<_DashboardView> {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
-                        builder: (_) => ListingListScreen(
-                          appState: widget.appState,
-                          title: service.name,
-                          listingType: 'service',
-                        ),
+                        builder: (_) =>
+                            ListingDetailScreen(slug: 'service-${service.id}'),
                       ),
                     );
                   },
@@ -945,6 +1064,64 @@ class _DashboardViewState extends State<_DashboardView> {
             const SizedBox(height: 24),
           ],
 
+          if (bannerItems.isNotEmpty) ...[
+            SectionHeader(
+              title: 'Promotions',
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 150,
+              child: Stack(
+                children: [
+                  PageView.builder(
+                    controller: _promoController,
+                    itemCount: bannerItems.length,
+                    itemBuilder: (_, index) {
+                      final banner = bannerItems[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child:
+                              (banner.imageUrl != null &&
+                                  banner.imageUrl!.isNotEmpty)
+                              ? CachedNetworkImage(
+                                  imageUrl: banner.imageUrl!,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, _, _) =>
+                                      _bannerPlaceholder(),
+                                )
+                              : _bannerPlaceholder(),
+                        ),
+                      );
+                    },
+                  ),
+                  if (bannerItems.length > 1)
+                    Positioned(
+                      bottom: 12,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: SmoothPageIndicator(
+                          controller: _promoController,
+                          count: bannerItems.length,
+                          effect: const WormEffect(
+                            dotWidth: 7,
+                            dotHeight: 7,
+                            activeDotColor: Colors.white,
+                            dotColor: Colors.white38,
+                            spacing: 6,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+
           // ── Recommended Products ──
           if (feed.recommendedProducts.isNotEmpty) ...[
             SectionHeader(
@@ -996,6 +1173,51 @@ class _DashboardViewState extends State<_DashboardView> {
             ),
             const SizedBox(height: 24),
           ],
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.borderLight),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.group_add_outlined, color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Text(
+                        'Invite People & Earn',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Referral Code: ${user?.referralCode ?? 'Not available'}',
+                    style: const TextStyle(color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Account Level',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const _AccountLevelProgress(),
+                ],
+              ),
+            ),
+          ),
 
           const SizedBox(height: 20),
         ],
@@ -1490,6 +1712,77 @@ class _HomeNavTile extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _QuickActionIcon extends StatelessWidget {
+  const _QuickActionIcon({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Ink(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.borderLight),
+        ),
+        child: Icon(icon, color: AppColors.textPrimary, size: 20),
+      ),
+    );
+  }
+}
+
+class _AccountLevelProgress extends StatelessWidget {
+  const _AccountLevelProgress();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: const [
+        _AccountLevelRow(label: 'Bronze', active: true),
+        SizedBox(height: 6),
+        _AccountLevelRow(label: 'Silver', active: false),
+        SizedBox(height: 6),
+        _AccountLevelRow(label: 'Gold', active: false),
+      ],
+    );
+  }
+}
+
+class _AccountLevelRow extends StatelessWidget {
+  const _AccountLevelRow({required this.label, required this.active});
+
+  final String label;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          active ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
+          size: 16,
+          color: active ? AppColors.success : AppColors.textMuted,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(
+            color: active ? AppColors.textPrimary : AppColors.textSecondary,
+            fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -93,23 +93,29 @@ class HomeApiController extends Controller
                 })
                 ->values();
 
-            // Get featured products
-            $featuredProducts = Product::query()
+            // Featured: latest arrivals
+            $featuredCollection = Product::query()
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
-                ->get()
-                ->map(function ($product) {
-                    return $this->formatProductResponse($product);
-                });
+                ->get();
+            $featuredIds = $featuredCollection->pluck('product_id')->all();
+            $featuredProducts = $featuredCollection->map(function ($product) {
+                return $this->formatProductResponse($product);
+            })->values();
 
-            // Get recommended products (top rated)
-            $recommendedProducts = Product::query()
+            // Recommended: high value items excluding featured set
+            $recommendedCollection = Product::query()
+                ->when(!empty($featuredIds), function ($query) use ($featuredIds) {
+                    return $query->whereNotIn('product_id', $featuredIds);
+                })
+                ->orderBy('unit_price', 'desc')
                 ->orderBy('created_at', 'desc')
                 ->limit(10)
-                ->get()
-                ->map(function ($product) {
-                    return $this->formatProductResponse($product);
-                });
+                ->get();
+            $recommendedIds = $recommendedCollection->pluck('product_id')->all();
+            $recommendedProducts = $recommendedCollection->map(function ($product) {
+                return $this->formatProductResponse($product);
+            })->values();
 
             // Get active coupons (benefits/offers)
             $coupons = [];
@@ -129,14 +135,18 @@ class HomeApiController extends Controller
                 ];
             }
 
-            // New launches (recently added products)
-            $newLaunches = Product::query()
+            // New launches: newest batch excluding featured/recommended
+            $excludeIds = array_values(array_unique(array_merge($featuredIds, $recommendedIds)));
+            $newLaunchCollection = Product::query()
+                ->when(!empty($excludeIds), function ($query) use ($excludeIds) {
+                    return $query->whereNotIn('product_id', $excludeIds);
+                })
                 ->orderBy('created_at', 'desc')
                 ->limit(8)
-                ->get()
-                ->map(function ($product) {
-                    return $this->formatProductResponse($product);
-                });
+                ->get();
+            $newLaunches = $newLaunchCollection->map(function ($product) {
+                return $this->formatProductResponse($product);
+            })->values();
 
             return $this->successResponse([
                 'user_location' => $userLocation,

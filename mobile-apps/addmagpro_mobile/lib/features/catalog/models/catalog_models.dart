@@ -122,11 +122,16 @@ class ProductListItem {
 
   factory ProductListItem.fromJson(Map<String, dynamic> json) {
     final brand = json['brand'];
+    final id = _toInt(json['id']) ?? _toInt(json['product_id']) ?? 0;
+    final name =
+        (json['name'] as String?) ?? (json['product_name'] as String?) ?? '-';
+    final slug =
+        (json['slug'] as String?) ?? (id > 0 ? id.toString() : _slugify(name));
+
     return ProductListItem(
-      id: _toInt(json['id']) ?? 0,
-      name:
-          (json['name'] as String?) ?? (json['product_name'] as String?) ?? '-',
-      slug: (json['slug'] as String?) ?? '',
+      id: id,
+      name: name,
+      slug: slug,
       effectivePrice:
           _toDouble(json['effective_price']) ??
           _toDouble(json['price']) ??
@@ -194,7 +199,12 @@ class ProductDetail {
   final List<ProductReview> reviews;
 
   factory ProductDetail.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final rootData = json['data'];
+    final data = rootData is Map<String, dynamic>
+        ? (rootData['product'] is Map<String, dynamic>
+              ? rootData['product'] as Map<String, dynamic>
+              : rootData)
+        : <String, dynamic>{};
     final images = data['images'] ?? data['product_images'];
     final reviews = data['reviews'];
     final category = data['category'];
@@ -203,7 +213,14 @@ class ProductDetail {
       id: _toInt(data['id']) ?? 0,
       name:
           (data['name'] as String?) ?? (data['product_name'] as String?) ?? '-',
-      slug: (data['slug'] as String?) ?? '',
+      slug:
+          (data['slug'] as String?) ??
+          ((_toInt(data['id']) ?? _toInt(data['product_id']) ?? 0) > 0
+              ? (_toInt(data['id']) ?? _toInt(data['product_id'])!).toString()
+              : _slugify(
+                  (data['name'] as String?) ??
+                      (data['product_name'] as String?),
+                )),
       description:
           data['description'] as String? ??
           data['product_description'] as String?,
@@ -528,6 +545,16 @@ int? _toInt(dynamic value) {
   if (value is num) return value.toInt();
   if (value is String) return int.tryParse(value);
   return null;
+}
+
+String _slugify(String? value) {
+  if (value == null) return '';
+  final normalized = value
+      .trim()
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+      .replaceAll(RegExp(r'^-+|-+$'), '');
+  return normalized;
 }
 
 double? _toDouble(dynamic value) {

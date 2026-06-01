@@ -101,17 +101,22 @@ class ProductApiController extends Controller
     {
         try {
             $product = null;
+            $normalized = trim($slug);
 
-            if (is_numeric($slug)) {
-                $product = Product::where('product_id', (int) $slug)->first();
+            if (preg_match('/^product-(\d+)$/', strtolower($normalized), $matches) === 1) {
+                $product = Product::where('product_id', (int) $matches[1])->first();
+            }
+
+            if (!$product && is_numeric($normalized)) {
+                $product = Product::where('product_id', (int) $normalized)->first();
             }
 
             if (!$product) {
                 $product = Product::query()
                     ->get()
-                    ->first(function ($item) use ($slug) {
+                    ->first(function ($item) use ($normalized) {
                         $derived = Str::slug((string) $item->product_name);
-                        return $derived === $slug;
+                        return $derived === $normalized;
                     });
             }
 
@@ -125,6 +130,11 @@ class ProductApiController extends Controller
             ]));
             $formatted['reviews'] = [];
             $formatted['stock'] = 999;
+            $formatted['short_description'] = $formatted['description'];
+            $formatted['category'] = [
+                'id' => (int) ($product->category_id ?? 0),
+                'name' => $this->resolveCategoryName((int) ($product->category_id ?? 0)),
+            ];
 
             return $this->successResponse($formatted, 'Product details retrieved');
         } catch (\Throwable $e) {
@@ -249,5 +259,19 @@ class ProductApiController extends Controller
             'rating_avg' => null,
             'created_at' => $product->created_at ? $product->created_at->toIso8601String() : null,
         ];
+    }
+
+    private function resolveCategoryName(int $categoryId): string
+    {
+        if ($categoryId <= 0) {
+            return 'General';
+        }
+
+        $category = Category::query()->where('id', $categoryId)->first();
+        if (!$category) {
+            return 'General';
+        }
+
+        return (string) ($category->CategoryName ?? 'General');
     }
 }
