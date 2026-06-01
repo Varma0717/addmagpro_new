@@ -4,10 +4,12 @@
 <section class="breadscrumb-section pt-0">
     <div class="custom-container">
         <div class="breadcrumb-head">
-            <nav><ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('welcome_page') }}">Home</a></li>
-                <li class="breadcrumb-item active">Stores</li>
-            </ol></nav>
+            <nav>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('welcome_page') }}">Home</a></li>
+                    <li class="breadcrumb-item active">Stores</li>
+                </ol>
+            </nav>
         </div>
     </div>
 </section>
@@ -26,8 +28,19 @@
             <div class="col-6 col-md-4 col-lg-3">
                 <a href="{{ route('store_fullview', $store->StoreID) }}" class="text-decoration-none">
                     <div class="text-center p-3 rounded border h-100" style="transition:.2s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(255,153,0,.2)'" onmouseout="this.style.boxShadow=''">
-                        @if($store->StoreImage ?? '')
-                        <img src="{{ asset($store->StoreImage) }}" alt="{{ $store->StoreName }}" style="width:80px;height:80px;object-fit:contain;margin-bottom:.75rem;">
+                        @php
+                        $storeImage = $store->StoreImage
+                        ?? $store->store_image
+                        ?? $store->ImageURL
+                        ?? null;
+                        $storeImageUrl = $storeImage
+                        ? (str_starts_with($storeImage, 'http://') || str_starts_with($storeImage, 'https://')
+                        ? $storeImage
+                        : asset($storeImage))
+                        : null;
+                        @endphp
+                        @if($storeImageUrl)
+                        <img src="{{ $storeImageUrl }}" alt="{{ $store->StoreName }}" style="width:80px;height:80px;object-fit:contain;margin-bottom:.75rem;">
                         @else
                         <div style="width:80px;height:80px;background:rgba(255,153,0,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;">
                             <i class="ri-store-line" style="font-size:2rem;color:var(--theme-color);"></i>
