@@ -129,7 +129,7 @@ class _AddMagProAppState extends State<AddMagProApp> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/logo.png', width: 80, height: 80),
+              Image.asset('assets/branding/logo_square.png', width: 80, height: 80),
               const SizedBox(height: 20),
               const Text(
                 'AddMagPro',

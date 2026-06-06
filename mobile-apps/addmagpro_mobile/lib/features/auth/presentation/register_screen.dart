@@ -73,6 +73,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    width: 124,
+                    height: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.borderLight),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: Image.asset('assets/branding/logo.png', fit: BoxFit.contain),
+                  ),
+                ),
+                const SizedBox(height: 14),
                 const Text('Join AddMagPro', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
                 const SizedBox(height: 4),
                 const Text('Create your account and start earning', style: TextStyle(fontSize: 14, color: AppColors.textMuted)),

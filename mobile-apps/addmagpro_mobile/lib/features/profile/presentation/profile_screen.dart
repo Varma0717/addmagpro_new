@@ -23,7 +23,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _emailController;
+  late final TextEditingController _locationController;
   late final ProfileRepository _repository;
+  bool _loadingProfile = false;
   bool _saving = false;
   String? _error;
   String? _pickedAvatarPath;
@@ -35,7 +37,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _nameController = TextEditingController(text: user?.name ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
+    _locationController = TextEditingController(text: user?.locationAddress ?? '');
     _repository = ProfileRepository(apiClient: ApiClient());
+    _refreshProfile();
   }
 
   @override
@@ -43,7 +47,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _nameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
+    _locationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshProfile() async {
+    final token = widget.appState.token;
+    if (token == null) return;
+
+    setState(() => _loadingProfile = true);
+    try {
+      final profile = await _repository.fetchProfile(token);
+      if (!mounted) return;
+
+      widget.appState.replaceCurrentUser(profile);
+      _nameController.text = profile.name;
+      _phoneController.text = profile.phone ?? '';
+      _emailController.text = profile.email ?? '';
+      _locationController.text = profile.locationAddress ?? '';
+    } catch (_) {
+      // Keep local values if profile refresh fails.
+    } finally {
+      if (mounted) setState(() => _loadingProfile = false);
+    }
   }
 
   Future<void> _pickAvatar() async {
@@ -65,6 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
         email: _emailController.text.trim(),
+        locationAddress: _locationController.text.trim(),
         avatarPath: _pickedAvatarPath,
       );
       if (!mounted) return;
@@ -131,6 +158,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 8),
+
+          if (_loadingProfile)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
+              child: LinearProgressIndicator(minHeight: 3, color: AppColors.primary),
+            ),
           Center(
             child: TextButton(
               onPressed: _pickAvatar,
@@ -155,6 +188,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 4),
                       Text(user?.role?.toUpperCase() ?? 'MEMBER', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: AppColors.primary)),
                       const Text('Role', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                    ],
+                  ),
+                ),
+                Container(width: 1, height: 40, color: AppColors.border),
+                Expanded(
+                  child: Column(
+                    children: [
+                      const Icon(Icons.verified_user_outlined, color: AppColors.warning, size: 22),
+                      const SizedBox(height: 4),
+                      Text((user?.kycStatus ?? 'pending').toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: AppColors.warning)),
+                      const Text('KYC', style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
                     ],
                   ),
                 ),
@@ -221,7 +265,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   controller: _emailController,
                   decoration: const InputDecoration(labelText: 'Email', prefixIcon: Icon(Icons.email_outlined)),
                   keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _locationController,
+                  decoration: const InputDecoration(labelText: 'Location address', prefixIcon: Icon(Icons.location_on_outlined)),
+                  keyboardType: TextInputType.streetAddress,
                   textInputAction: TextInputAction.done,
+                  minLines: 1,
+                  maxLines: 2,
                 ),
                 const SizedBox(height: 28),
                 FilledButton(

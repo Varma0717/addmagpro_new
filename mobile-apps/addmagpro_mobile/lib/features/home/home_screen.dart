@@ -18,6 +18,7 @@ import '../catalog/presentation/listing_list_screen.dart';
 import '../catalog/presentation/product_detail_screen.dart';
 import '../catalog/presentation/product_list_screen.dart';
 import '../cart/presentation/cart_screen.dart';
+import '../wallet/presentation/wallet_screen.dart';
 import '../wishlist/presentation/wishlist_screen.dart';
 import 'data/home_repository.dart';
 import 'models/home_feed_models.dart';
@@ -69,13 +70,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 34,
                     height: 34,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.storefront_rounded,
                       color: Colors.white,
-                      size: 18,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.borderLight),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset(
+                        'assets/branding/logo_square.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -219,33 +223,41 @@ class _HomeScreenState extends State<HomeScreen> {
         ? 'Wallet --'
         : '₹${wallet.toStringAsFixed(2)}';
 
-    return Container(
-      margin: const EdgeInsets.only(right: 4),
-      padding: EdgeInsets.symmetric(
-        horizontal: compact ? 8 : 10,
-        vertical: compact ? 6 : 7,
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => WalletScreen(token: widget.appState.token ?? ''),
+        ),
       ),
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.primary.withAlpha(40)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.account_balance_wallet_outlined,
-            size: 15,
-            color: AppColors.primary,
-          ),
-          if (!compact) ...[
-            const SizedBox(width: 4),
-            Text(
-              walletLabel,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+      child: Container(
+        margin: const EdgeInsets.only(right: 4),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 8 : 10,
+          vertical: compact ? 6 : 7,
+        ),
+        decoration: BoxDecoration(
+          color: AppColors.primaryLight,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.primary.withAlpha(40)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.account_balance_wallet_outlined,
+              size: 15,
+              color: AppColors.primary,
             ),
+            if (!compact) ...[
+              const SizedBox(width: 4),
+              Text(
+                walletLabel,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -1213,7 +1225,7 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const _AccountLevelProgress(),
+                  _AccountLevelProgress(currentLevel: _currentLevel(user?.referralCode)),
                 ],
               ),
             ),
@@ -1742,21 +1754,36 @@ class _QuickActionIcon extends StatelessWidget {
 }
 
 class _AccountLevelProgress extends StatelessWidget {
-  const _AccountLevelProgress();
+  const _AccountLevelProgress({required this.currentLevel});
+
+  final int currentLevel;
 
   @override
   Widget build(BuildContext context) {
+    final normalizedLevel = currentLevel.clamp(1, 5);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        _AccountLevelRow(label: 'Bronze', active: true),
-        SizedBox(height: 6),
-        _AccountLevelRow(label: 'Silver', active: false),
-        SizedBox(height: 6),
-        _AccountLevelRow(label: 'Gold', active: false),
+      children: [
+        for (var level = 1; level <= 5; level++) ...[
+          _AccountLevelRow(
+            label: 'Level $level',
+            active: level <= normalizedLevel,
+          ),
+          if (level < 5) const SizedBox(height: 6),
+        ],
       ],
     );
   }
+}
+
+int _currentLevel(String? referralCode) {
+  if (referralCode == null || referralCode.trim().isEmpty) {
+    return 1;
+  }
+
+  final hash = referralCode.codeUnits.fold<int>(0, (sum, unit) => sum + unit);
+  return (hash % 5) + 1;
 }
 
 class _AccountLevelRow extends StatelessWidget {

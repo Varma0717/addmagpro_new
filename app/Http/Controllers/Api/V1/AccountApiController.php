@@ -215,14 +215,14 @@ class AccountApiController extends Controller
     /**
      * Mark notification as read
      */
-    public function markNotificationRead(Request $request, int $notificationId)
+    public function markNotificationRead(Request $request, string $notificationId)
     {
         $user = $request->user();
         if (!$user) {
             return $this->unauthorizedResponse('Authentication required', 401);
         }
 
-        $notification = $user->notifications()->find($notificationId);
+        $notification = $user->notifications()->where('id', $notificationId)->first();
 
         if (!$notification) {
             return $this->notFoundResponse('Notification not found');

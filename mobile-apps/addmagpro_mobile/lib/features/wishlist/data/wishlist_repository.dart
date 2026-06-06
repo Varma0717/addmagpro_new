@@ -9,8 +9,11 @@ class WishlistRepository {
   Future<List<WishlistItem>> fetchAll(String token) async {
     final payload = await _apiClient.get('/wishlist', bearerToken: token);
     final data = payload['data'];
-    if (data is! Map<String, dynamic>) return <WishlistItem>[];
-    final items = data['items'];
+    final items = data is List
+      ? data
+      : (data is Map<String, dynamic>
+          ? (data['items'] ?? data['data'] ?? data['wishlist_items'])
+          : null);
     if (items is! List) return <WishlistItem>[];
     return items
         .whereType<Map<String, dynamic>>()
@@ -58,6 +61,13 @@ class WishlistRepository {
     );
     final data =
         payload['data'] as Map<String, dynamic>? ?? <String, dynamic>{};
-    return (data['is_in_wishlist'] as bool?) ?? false;
+    final raw = data['is_in_wishlist'];
+    if (raw is bool) return raw;
+    if (raw is num) return raw != 0;
+    if (raw is String) {
+      final normalized = raw.trim().toLowerCase();
+      return normalized == 'true' || normalized == '1';
+    }
+    return false;
   }
 }

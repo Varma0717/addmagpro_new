@@ -58,16 +58,18 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Center(
                     child: Container(
-                      width: 72,
-                      height: 72,
+                      width: 118,
+                      height: 58,
                       decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.borderLight),
                         boxShadow: [
-                          BoxShadow(color: AppColors.primary.withAlpha(60), blurRadius: 20, offset: const Offset(0, 8)),
+                          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4)),
                         ],
                       ),
-                      child: const Icon(Icons.storefront_rounded, color: Colors.white, size: 36),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      child: Image.asset('assets/branding/logo.png', fit: BoxFit.contain),
                     ),
                   ),
                   const SizedBox(height: 28),

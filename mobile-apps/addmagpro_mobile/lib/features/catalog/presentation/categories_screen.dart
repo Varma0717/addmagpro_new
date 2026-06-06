@@ -102,22 +102,21 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
     try {
       final category = _categories[_selectedIndex];
-      if (category.type == 'ecommerce') {
-        final response = await _catalogRepository.fetchProducts(
-          page: _page,
-          categorySlug: category.slug,
-          sort: _sortOption.apiValue,
-          minPrice: _minPrice,
-          maxPrice: _maxPrice,
-          rating: _minRating,
-          brand: _brand.trim().isEmpty ? null : _brand.trim(),
-        );
-        if (!mounted) return;
-        setState(() {
-          _products.addAll(response.items);
-          _lastPage = response.lastPage;
-        });
-      }
+      final response = await _catalogRepository.fetchProducts(
+        page: _page,
+        categoryId: category.id,
+        categorySlug: category.slug,
+        sort: _sortOption.apiValue,
+        minPrice: _minPrice,
+        maxPrice: _maxPrice,
+        rating: _minRating,
+        brand: _brand.trim().isEmpty ? null : _brand.trim(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _products.addAll(response.items);
+        _lastPage = response.lastPage;
+      });
     } catch (error) {
       if (!mounted) return;
       setState(() => _error = error.toString());

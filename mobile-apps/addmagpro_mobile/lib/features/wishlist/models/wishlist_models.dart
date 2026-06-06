@@ -22,25 +22,53 @@ class WishlistItem {
   factory WishlistItem.fromJson(Map<String, dynamic> json) {
     final product =
         json['product'] as Map<String, dynamic>? ?? <String, dynamic>{};
+    final fallbackName =
+        (json['name'] as String?) ?? (product['name'] as String?) ?? '-';
+
     return WishlistItem(
-      id: (json['id'] as num?)?.toInt() ?? 0,
-      productId:
-          (json['product_id'] as num?)?.toInt() ??
-          (product['id'] as num?)?.toInt() ??
-          0,
-      name: (json['name'] as String?) ?? (product['name'] as String?) ?? '-',
-      slug: (json['slug'] as String?) ?? (product['slug'] as String?) ?? '',
+      id: _toInt(json['id']) ?? _toInt(json['wishlist_id']) ?? 0,
+      productId: _toInt(json['product_id']) ?? _toInt(product['id']) ?? 0,
+      name: fallbackName,
+      slug:
+          (json['slug'] as String?) ??
+          (product['slug'] as String?) ??
+          (_toInt(json['product_id'])?.toString() ?? _slugify(fallbackName)),
       effectivePrice:
-          (json['effective_price'] as num?)?.toDouble() ??
-          (product['final_price'] as num?)?.toDouble() ??
-          (product['price'] as num?)?.toDouble() ??
+          _toDouble(json['effective_price']) ??
+          _toDouble(product['final_price']) ??
+          _toDouble(product['price']) ??
           0,
       primaryImageUrl: AppConfig.resolveImageUrl(
         json['primary_image_url'] as String? ??
             product['primary_image_url'] as String? ??
-            product['image_url'] as String?,
+            product['image_url'] as String? ??
+            product['product_images'] as String?,
       ),
       addedAt: json['added_at'] as String?,
     );
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  static double? _toDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  static String _slugify(String value) {
+    return value
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
+        .replaceAll(RegExp(r'^-+|-+$'), '');
   }
 }

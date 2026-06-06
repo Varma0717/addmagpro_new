@@ -9,6 +9,7 @@ class CatalogRepository {
   Future<ProductListResponse> fetchProducts({
     String? token,
     int page = 1,
+    int? categoryId,
     String? categorySlug,
     String? sort,
     double? minPrice,
@@ -17,6 +18,9 @@ class CatalogRepository {
     String? brand,
   }) async {
     final params = <String>['page=$page'];
+    if (categoryId != null) {
+      params.add('category_id=$categoryId');
+    }
     if (categorySlug != null && categorySlug.trim().isNotEmpty) {
       params.add('category_slug=${Uri.encodeComponent(categorySlug.trim())}');
     }

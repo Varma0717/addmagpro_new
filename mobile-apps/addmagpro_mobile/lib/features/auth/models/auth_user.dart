@@ -10,6 +10,8 @@ class AuthUser {
   final String? role;
   final bool isActive;
   final double walletBalance;
+  final String? kycStatus;
+  final String? locationAddress;
 
   const AuthUser({
     required this.id,
@@ -21,9 +23,16 @@ class AuthUser {
     this.role,
     this.isActive = true,
     this.walletBalance = 0,
+    this.kycStatus,
+    this.locationAddress,
   });
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
+    final location = json['location'];
+    final locationMap = location is Map<String, dynamic>
+        ? location
+        : const <String, dynamic>{};
+
     return AuthUser(
       id: _toInt(json['id']) ?? 0,
       name: (json['name'] as String?) ?? 'User',
@@ -34,6 +43,10 @@ class AuthUser {
       role: json['role'] as String?,
       isActive: _toBool(json['is_active']) ?? true,
       walletBalance: _toDouble(json['wallet_balance']) ?? 0,
+      kycStatus: json['kyc_status'] as String?,
+      locationAddress:
+          json['location_address'] as String? ??
+          locationMap['address'] as String?,
     );
   }
 
