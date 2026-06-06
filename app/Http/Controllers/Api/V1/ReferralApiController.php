@@ -68,40 +68,147 @@ class ReferralApiController extends Controller
      */
     public function list(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
-        $status = $request->get('status'); // completed, pending, expired
+        $user = $request->user();
 
-        $query = UserReferral::where('referrer_id', $request->user()->id)
-            ->with('referredUser:id,name,email,phone,created_at');
-
-        if ($status) {
-            $query->where('status', $status);
+        if (!$user->referral_code) {
+            $user->generateReferralCode();
         }
 
-        $referrals = $query->latest()->paginate($perPage);
+        $referrals = UserReferral::where('referrer_id', $user->id)
+            ->with('referredUser:id,name,phone,avatar_url,deleted_at,created_at')
+            ->latest()
+            ->get();
 
-        // Transform data
-        collect($referrals->items())->transform(function ($referral) {
+        $activeReferrals = $referrals->where('status', 'completed')->count();
+        $inactiveReferrals = $referrals->count() - $activeReferrals;
+
+        $referralItems = $referrals->map(function ($referral) use ($user) {
+            $referred = $referral->referredUser;
             return [
-                'id' => $referral->id,
-                'referred_user' => $referral->referredUser ? [
-                    'id' => $referral->referredUser->id,
-                    'name' => $referral->referredUser->name,
-                    'email' => $referral->referredUser->email,
-                    'phone' => $referral->referredUser->phone,
-                    'joined_at' => $referral->referredUser->created_at,
-                ] : null,
-                'status' => $referral->status,
-                'referrer_bonus' => (float) $referral->referrer_bonus,
-                'referred_bonus' => (float) $referral->referred_bonus,
-                'referrer_bonus_claimed' => $referral->referrer_bonus_claimed,
-                'referred_bonus_claimed' => $referral->referred_bonus_claimed,
-                'bonus_credited_at' => $referral->bonus_credited_at,
-                'created_at' => $referral->created_at,
+                'id' => (int) $referral->id,
+                'status' => (string) ($referral->status ?? 'pending'),
+                'signup_reward_given' => (bool) $referral->referred_bonus_claimed,
+                'purchase_reward_given' => (bool) $referral->referrer_bonus_claimed,
+                'joined_at' => $referred?->created_at ?? $referral->created_at,
+                'referred_user' => [
+                    'id' => $referred?->id,
+                    'name' => (string) ($referred?->name ?? 'Member'),
+                    'phone' => $referred?->phone,
+                    'avatar_url' => $referred?->avatar_url,
+                    'is_active' => $referred ? ($referred->deleted_at === null) : false,
+                ],
+                'team' => [
+                    'parent_id' => (int) $user->id,
+                    'child_id' => $referred?->id,
+                    'depth' => 1,
+                ],
             ];
-        });
+        })->values();
 
-        return $this->paginatedResponse($referrals, 'Referrals retrieved');
+        $shareUrl = $this->generateReferralLink($user->referral_code);
+
+        return $this->successResponse([
+            'summary' => [
+                'referral_code' => $user->referral_code,
+                'total_referrals' => $referrals->count(),
+                'active_referrals' => $activeReferrals,
+                'inactive_referrals' => $inactiveReferrals,
+                'total_earnings' => (float) $referrals
+                    ->where('status', 'completed')
+                    ->sum('referrer_bonus'),
+            ],
+            'share' => [
+                'share_url' => $shareUrl,
+                'whatsapp_url' => 'https://wa.me/?text=' . urlencode("Join AdMagPro with my referral code: {$user->referral_code} {$shareUrl}"),
+            ],
+            'referrals' => $referralItems,
+            'team_structure' => [],
+            'level_summary' => [],
+        ], 'Referrals retrieved');
+    }
+
+    /**
+     * Get referral team hierarchy
+     */
+    public function team(Request $request)
+    {
+        $user = $request->user();
+        $maxDepth = max(1, min(5, (int) $request->get('depth', 3)));
+
+        $teamStructure = [];
+        $levelSummary = [];
+        $parentIds = [$user->id];
+
+        for ($depth = 1; $depth <= $maxDepth; $depth++) {
+            if (empty($parentIds)) {
+                break;
+            }
+
+            $levelReferrals = UserReferral::whereIn('referrer_id', $parentIds)
+                ->with('referredUser:id,name,phone,avatar_url,deleted_at,created_at')
+                ->get();
+
+            if ($levelReferrals->isEmpty()) {
+                break;
+            }
+
+            $nextParentIds = [];
+            $activeMembers = 0;
+            $inactiveMembers = 0;
+            $earnings = 0.0;
+
+            foreach ($levelReferrals as $referral) {
+                $member = $referral->referredUser;
+                $isActive = $member ? ($member->deleted_at === null) : false;
+
+                if ($isActive) {
+                    $activeMembers++;
+                } else {
+                    $inactiveMembers++;
+                }
+
+                if ((string) $referral->status === 'completed') {
+                    $earnings += (float) $referral->referrer_bonus;
+                }
+
+                $teamStructure[] = [
+                    'id' => (int) $referral->id,
+                    'parent_id' => (int) $referral->referrer_id,
+                    'child_id' => (int) $referral->referred_user_id,
+                    'depth' => $depth,
+                    'status' => (string) ($referral->status ?? 'pending'),
+                    'signup_reward_given' => (bool) $referral->referred_bonus_claimed,
+                    'purchase_reward_given' => (bool) $referral->referrer_bonus_claimed,
+                    'joined_at' => $member?->created_at ?? $referral->created_at,
+                    'member' => [
+                        'id' => $member?->id,
+                        'name' => (string) ($member?->name ?? 'Member'),
+                        'phone' => $member?->phone,
+                        'avatar_url' => $member?->avatar_url,
+                        'is_active' => $isActive,
+                    ],
+                ];
+
+                if ($referral->referred_user_id) {
+                    $nextParentIds[] = (int) $referral->referred_user_id;
+                }
+            }
+
+            $levelSummary[] = [
+                'depth' => $depth,
+                'members' => $levelReferrals->count(),
+                'active_members' => $activeMembers,
+                'inactive_members' => $inactiveMembers,
+                'earnings' => $earnings,
+            ];
+
+            $parentIds = array_values(array_unique($nextParentIds));
+        }
+
+        return $this->successResponse([
+            'team_structure' => $teamStructure,
+            'level_summary' => $levelSummary,
+        ], 'Referral team retrieved');
     }
 
     /**

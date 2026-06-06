@@ -22,24 +22,37 @@ class AuthApiController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|min:3|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'nullable|email|unique:users,email',
             'phone' => 'required|string|unique:users,phone',
             'password' => 'required|string|min:8|confirmed',
+            'referral_code' => 'sometimes|nullable|string|exists:users,referral_code',
         ]);
 
         if ($validator->fails()) {
             return $this->validationErrorResponse($validator->errors()->toArray(), 422);
         }
 
+        $email = $request->email;
+        if (!$email || trim((string) $email) === '') {
+            $email = 'user' . $request->phone . '@addmagpro.local';
+        }
+
         // Create user
         $user = User::create([
             'name' => $request->name,
-            'email' => $request->email,
+            'email' => $email,
             'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'referral_code' => 'REF' . strtoupper(Str::random(8)),
             'kyc_status' => 'pending',
         ]);
+
+        if ($request->filled('referral_code')) {
+            $referrer = User::where('referral_code', strtoupper((string) $request->referral_code))->first();
+            if ($referrer) {
+                $user->update(['referred_by_user_id' => $referrer->id]);
+            }
+        }
 
         // Create a token for the user
         $token = $user->createToken('auth-token')->plainTextToken;

@@ -32,8 +32,45 @@ class WalletApiController extends Controller
     {
         $user = $request->user();
 
+        $transactions = $user->walletTransactions()
+            ->latest()
+            ->limit(20)
+            ->get()
+            ->map(function ($tx) {
+                return [
+                    'id' => (int) $tx->id,
+                    'type' => (string) $tx->type,
+                    'amount' => (float) $tx->amount,
+                    'description' => (string) ($tx->description ?? ''),
+                    'reference_type' => (string) ($tx->transaction_type ?? ''),
+                    'balance_after' => (float) ($tx->balance_after ?? 0),
+                    'created_at' => $tx->created_at,
+                ];
+            })
+            ->values();
+
+        $withdrawRequests = $user->walletTransactions()
+            ->where('transaction_type', 'withdraw_request')
+            ->latest()
+            ->limit(10)
+            ->get()
+            ->map(function ($tx) {
+                return [
+                    'id' => (int) $tx->id,
+                    'request_no' => 'WDR-' . str_pad((string) $tx->id, 6, '0', STR_PAD_LEFT),
+                    'amount' => (float) $tx->amount,
+                    'status' => (string) ($tx->status ?? 'pending'),
+                    'remarks' => (string) ($tx->description ?? ''),
+                    'created_at' => $tx->created_at,
+                ];
+            })
+            ->values();
+
         return $this->successResponse([
             'balance' => (float) $user->wallet_balance,
+            'preset_amounts' => [100, 200, 500, 1000, 2000, 5000],
+            'transactions' => $transactions,
+            'recent_withdraw_requests' => $withdrawRequests,
             'total_transactions' => $user->walletTransactions()->count(),
             'pending_transactions' => $user->walletTransactions()
                 ->where('status', 'pending')
@@ -299,6 +336,61 @@ class WalletApiController extends Controller
         } catch (\Exception $e) {
             return $this->errorResponse(
                 'Failed to create transfer request: ' . $e->getMessage(),
+                [],
+                500
+            );
+        }
+    }
+
+    /**
+     * Create a wallet withdraw request used by mobile app
+     */
+    public function createWithdrawRequest(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|numeric|min:100',
+            'remarks' => 'sometimes|nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray(), 422);
+        }
+
+        try {
+            $user = $request->user();
+            $amount = (float) $request->amount;
+
+            if ((float) $user->wallet_balance < $amount) {
+                return $this->errorResponse('Insufficient wallet balance', [], 400);
+            }
+
+            $transaction = UserWalletTransaction::create([
+                'user_id' => $user->id,
+                'type' => 'debit',
+                'transaction_type' => 'withdraw_request',
+                'amount' => $amount,
+                'balance_before' => (float) $user->wallet_balance,
+                // Balance is not deducted immediately; admin approval flow can settle it later.
+                'balance_after' => (float) $user->wallet_balance,
+                'reference_id' => 'WDR_' . $user->id . '_' . time(),
+                'status' => 'pending',
+                'description' => (string) $request->get('remarks', 'Wallet withdrawal request'),
+                'metadata' => [
+                    'source' => 'mobile-app',
+                ],
+            ]);
+
+            return $this->successResponse([
+                'id' => (int) $transaction->id,
+                'request_no' => 'WDR-' . str_pad((string) $transaction->id, 6, '0', STR_PAD_LEFT),
+                'amount' => (float) $transaction->amount,
+                'status' => (string) $transaction->status,
+                'remarks' => (string) ($transaction->description ?? ''),
+                'created_at' => $transaction->created_at,
+            ], 'Withdraw request created', 201);
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Failed to create withdraw request: ' . $e->getMessage(),
                 [],
                 500
             );

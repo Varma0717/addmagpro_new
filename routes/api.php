@@ -108,6 +108,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('profile', [AccountApiController::class, 'updateProfile']);
         Route::get('addresses', [AccountApiController::class, 'addresses']);
         Route::post('addresses', [AccountApiController::class, 'addAddress']);
+        Route::post('device-tokens', [AccountApiController::class, 'registerDeviceToken']);
+        Route::delete('device-tokens', [AccountApiController::class, 'removeDeviceToken']);
+        Route::post('withdraw-requests', [WalletApiController::class, 'createWithdrawRequest']);
         Route::get('notifications', [AccountApiController::class, 'notifications']);
         Route::post('notifications/{id}/read', [AccountApiController::class, 'markNotificationRead']);
         Route::get('notification-preferences', [AccountApiController::class, 'notificationPreferences']);
@@ -130,6 +133,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('v1/account/referrals')->group(function () {
         Route::get('', [ReferralApiController::class, 'list']);
         Route::get('profile', [ReferralApiController::class, 'profile']);
+        Route::get('team', [ReferralApiController::class, 'team']);
         Route::get('{id}', [ReferralApiController::class, 'show']);
         Route::post('share', [ReferralApiController::class, 'share']);
         Route::post('register', [ReferralApiController::class, 'registerWithCode']);

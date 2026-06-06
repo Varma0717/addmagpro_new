@@ -103,6 +103,96 @@ class AccountApiController extends Controller
     }
 
     /**
+     * Register or update an FCM device token for the authenticated user
+     */
+    public function registerDeviceToken(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'token' => 'required|string|max:512',
+            'platform' => 'sometimes|string|in:android,ios,web',
+            'device_name' => 'sometimes|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray(), 422);
+        }
+
+        $preferences = is_array($user->preferences) ? $user->preferences : [];
+        $storedTokens = $preferences['device_tokens'] ?? [];
+        if (!is_array($storedTokens)) {
+            $storedTokens = [];
+        }
+
+        $token = trim((string) $request->token);
+        $storedTokens = collect($storedTokens)
+            ->filter(fn($item) => is_array($item) && ($item['token'] ?? null) !== $token)
+            ->values()
+            ->all();
+
+        array_unshift($storedTokens, [
+            'token' => $token,
+            'platform' => (string) $request->get('platform', 'android'),
+            'device_name' => (string) $request->get('device_name', 'mobile-device'),
+            'updated_at' => now()->toIso8601String(),
+        ]);
+
+        // Keep only a small recent token set per user.
+        $preferences['device_tokens'] = array_slice($storedTokens, 0, 20);
+        $user->update(['preferences' => $preferences]);
+
+        return $this->successResponse([
+            'token' => $token,
+            'registered' => true,
+            'tokens_count' => count($preferences['device_tokens']),
+        ], 'Device token registered');
+    }
+
+    /**
+     * Remove an FCM device token for the authenticated user
+     */
+    public function removeDeviceToken(Request $request)
+    {
+        $user = $request->user();
+        if (!$user) {
+            return $this->unauthorizedResponse('Authentication required', 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'token' => 'required|string|max:512',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->validationErrorResponse($validator->errors()->toArray(), 422);
+        }
+
+        $preferences = is_array($user->preferences) ? $user->preferences : [];
+        $storedTokens = $preferences['device_tokens'] ?? [];
+        if (!is_array($storedTokens)) {
+            $storedTokens = [];
+        }
+
+        $token = trim((string) $request->token);
+        $remaining = collect($storedTokens)
+            ->filter(fn($item) => is_array($item) && ($item['token'] ?? null) !== $token)
+            ->values()
+            ->all();
+
+        $preferences['device_tokens'] = $remaining;
+        $user->update(['preferences' => $preferences]);
+
+        return $this->successResponse([
+            'token' => $token,
+            'removed' => true,
+            'tokens_count' => count($remaining),
+        ], 'Device token removed');
+    }
+
+    /**
      * Get user notifications
      */
     public function notifications(Request $request)
