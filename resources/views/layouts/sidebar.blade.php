@@ -11,6 +11,28 @@
                     <span class="nav-text">Dashboard</span>
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="{{ route('admin_ops') }}" class="nav-link {{ request()->routeIs('admin_ops') ? 'active' : '' }}">
+                    <i class="ri-layout-grid-line nav-icon"></i>
+                    <span class="nav-text">Operations Hub</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="#opsSubmenu" class="nav-link" data-bs-toggle="collapse" aria-expanded="{{ request()->routeIs('admin_ops_categories','admin_ops_services','admin_ops_stores','admin_ops_vendors','admin_ops_products','admin_ops_wallet') ? 'true' : 'false' }}">
+                    <i class="ri-tools-line nav-icon"></i>
+                    <span class="nav-text">Manage Content</span>
+                    <i class="ri-arrow-right-s-line submenu-arrow ms-auto"></i>
+                </a>
+                <ul class="sidebar-submenu collapse {{ request()->routeIs('admin_ops_categories','admin_ops_services','admin_ops_stores','admin_ops_vendors','admin_ops_products','admin_ops_wallet') ? 'show' : '' }}" id="opsSubmenu">
+                    <li><a href="{{ route('admin_ops_categories') }}" class="nav-link {{ request()->routeIs('admin_ops_categories') ? 'active' : '' }}">Categories</a></li>
+                    <li><a href="{{ route('admin_ops_services') }}" class="nav-link {{ request()->routeIs('admin_ops_services') ? 'active' : '' }}">Services</a></li>
+                    <li><a href="{{ route('admin_ops_stores') }}" class="nav-link {{ request()->routeIs('admin_ops_stores') ? 'active' : '' }}">Stores</a></li>
+                    <li><a href="{{ route('admin_ops_vendors') }}" class="nav-link {{ request()->routeIs('admin_ops_vendors') ? 'active' : '' }}">Vendors</a></li>
+                    <li><a href="{{ route('admin_ops_products') }}" class="nav-link {{ request()->routeIs('admin_ops_products') ? 'active' : '' }}">Products</a></li>
+                    <li><a href="{{ route('admin_ops_wallet') }}" class="nav-link {{ request()->routeIs('admin_ops_wallet') ? 'active' : '' }}">Wallet Ops</a></li>
+                </ul>
+            </li>
 
             <div class="sidebar-label">Settlements</div>
             <li class="nav-item">

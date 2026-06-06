@@ -209,8 +209,39 @@ class ProductDetail {
     final reviews = data['reviews'];
     final category = data['category'];
 
+    final fallbackImage = AppConfig.resolveImageUrl(
+      data['primary_image_url'] as String? ??
+          data['image_url'] as String? ??
+          data['product_images'] as String?,
+    );
+
+    final parsedImages = images is List
+        ? images
+              .map((e) {
+                if (e is String) {
+                  return AppConfig.resolveImageUrl(e);
+                }
+                if (e is Map<String, dynamic>) {
+                  return AppConfig.resolveImageUrl(
+                    e['image_url'] as String? ??
+                        e['url'] as String? ??
+                        e['path'] as String?,
+                  );
+                }
+                return null;
+              })
+              .whereType<String>()
+              .toList(growable: false)
+        : (images is String && images.trim().isNotEmpty
+              ? images
+                    .split(',')
+                    .map((value) => AppConfig.resolveImageUrl(value.trim()))
+                    .whereType<String>()
+                    .toList(growable: false)
+              : <String>[]);
+
     return ProductDetail(
-      id: _toInt(data['id']) ?? 0,
+      id: _toInt(data['id']) ?? _toInt(data['product_id']) ?? 0,
       name:
           (data['name'] as String?) ?? (data['product_name'] as String?) ?? '-',
       slug:
@@ -241,29 +272,14 @@ class ProductDetail {
           _toDouble(data['discount_percent']) ??
           _toDouble(data['discount_percentage']) ??
           0,
-      images: images is List
-          ? images
-                .map((e) {
-                  if (e is String) {
-                    return AppConfig.resolveImageUrl(e);
-                  }
-                  if (e is Map<String, dynamic>) {
-                    return AppConfig.resolveImageUrl(
-                      e['image_url'] as String? ??
-                          e['url'] as String? ??
-                          e['path'] as String?,
-                    );
-                  }
-                  return null;
-                })
-                .whereType<String>()
-                .toList(growable: false)
-          : <String>[],
+      images: parsedImages.isNotEmpty
+          ? parsedImages
+          : (fallbackImage != null ? <String>[fallbackImage] : <String>[]),
       ratingAvg: _toDouble(data['rating_avg']),
       stock: _toInt(data['stock']) ?? 0,
       category: category is Map<String, dynamic>
           ? category['name'] as String?
-          : null,
+          : (category is String ? category : data['category_name'] as String?),
       reviews: reviews is List
           ? reviews
                 .whereType<Map<String, dynamic>>()

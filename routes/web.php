@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\Stores\PendingStore;
 use App\Http\Controllers\Admin\Stores\RejectedStore;
 use App\Http\Controllers\Admin\Category\AddCategory;
 use App\Http\Controllers\Admin\Brand\AddBrand;
+use App\Http\Controllers\Admin\AdminOperationsController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\Website_Policies\PolicyController;
 use App\Http\Controllers\Vendor\VendorController;
@@ -99,6 +100,34 @@ Route::view('/register', 'auth.register')->middleware('guest')->name('register')
 | Access: /adminlogin for login, /home for dashboard
 */
 Route::group(['middleware' => ['isAdminLogin']], function () {
+    Route::get('admin-operations', [AdminOperationsController::class, 'index'])->name('admin_ops');
+    Route::get('admin-operations/categories', [AdminOperationsController::class, 'categories'])->name('admin_ops_categories');
+    Route::post('admin-operations/categories', [AdminOperationsController::class, 'storeCategory'])->name('admin_ops_categories_store');
+    Route::post('admin-operations/categories/{id}/update', [AdminOperationsController::class, 'updateCategory'])->name('admin_ops_categories_update');
+    Route::post('admin-operations/categories/{id}/delete', [AdminOperationsController::class, 'deleteCategory'])->name('admin_ops_categories_delete');
+
+    Route::get('admin-operations/services', [AdminOperationsController::class, 'services'])->name('admin_ops_services');
+    Route::post('admin-operations/services', [AdminOperationsController::class, 'storeService'])->name('admin_ops_services_store');
+    Route::post('admin-operations/services/{id}/update', [AdminOperationsController::class, 'updateService'])->name('admin_ops_services_update');
+    Route::post('admin-operations/services/{id}/delete', [AdminOperationsController::class, 'deleteService'])->name('admin_ops_services_delete');
+
+    Route::get('admin-operations/stores', [AdminOperationsController::class, 'stores'])->name('admin_ops_stores');
+    Route::post('admin-operations/stores', [AdminOperationsController::class, 'storeStore'])->name('admin_ops_stores_store');
+    Route::post('admin-operations/stores/{id}/update', [AdminOperationsController::class, 'updateStore'])->name('admin_ops_stores_update');
+    Route::post('admin-operations/stores/{id}/delete', [AdminOperationsController::class, 'deleteStore'])->name('admin_ops_stores_delete');
+
+    Route::get('admin-operations/vendors', [AdminOperationsController::class, 'vendors'])->name('admin_ops_vendors');
+    Route::post('admin-operations/vendors', [AdminOperationsController::class, 'storeVendor'])->name('admin_ops_vendors_store');
+    Route::post('admin-operations/vendors/{id}/update', [AdminOperationsController::class, 'updateVendor'])->name('admin_ops_vendors_update');
+
+    Route::get('admin-operations/products', [AdminOperationsController::class, 'products'])->name('admin_ops_products');
+    Route::post('admin-operations/products', [AdminOperationsController::class, 'storeProduct'])->name('admin_ops_products_store');
+    Route::post('admin-operations/products/{id}/update', [AdminOperationsController::class, 'updateProduct'])->name('admin_ops_products_update');
+    Route::post('admin-operations/products/{id}/delete', [AdminOperationsController::class, 'deleteProduct'])->name('admin_ops_products_delete');
+
+    Route::get('admin-operations/wallet', [AdminOperationsController::class, 'wallet'])->name('admin_ops_wallet');
+    Route::post('admin-operations/wallet/{id}/status', [AdminOperationsController::class, 'updateWalletTransactionStatus'])->name('admin_ops_wallet_status');
+
     Route::get('pending_kyc', [PendingKyc::class, 'pending_kyc'])->name('pending_kyc');
     // Route::view('home','admin_pages.index')->name('home');
     Route::get('home', [AdminLogin::class, 'admin_dashboard'])->name('home');
