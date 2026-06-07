@@ -80,8 +80,10 @@ class CartProduct {
           _toDouble(json['price']) ??
           _toDouble(json['final_price']) ??
           0,
-      primaryImageUrl: AppConfig.resolveImageUrl(
-        json['primary_image_url'] as String? ?? json['image_url'] as String?,
+      primaryImageUrl: _resolveFirstImageUrl(
+        json['primary_image_url'] as String? ??
+            json['image_url'] as String? ??
+            json['product_images'] as String?,
       ),
     );
   }
@@ -160,4 +162,17 @@ double? _toDouble(dynamic value) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value);
   return null;
+}
+
+String? _resolveFirstImageUrl(String? value) {
+  if (value == null || value.trim().isEmpty) return null;
+  final cleaned = value
+      .replaceAll('"', '')
+      .replaceAll("'", '')
+      .replaceAll('\\', '/');
+  final first = cleaned
+      .split(',')
+      .map((entry) => entry.trim())
+      .firstWhere((entry) => entry.isNotEmpty, orElse: () => '');
+  return first.isEmpty ? null : AppConfig.resolveImageUrl(first);
 }

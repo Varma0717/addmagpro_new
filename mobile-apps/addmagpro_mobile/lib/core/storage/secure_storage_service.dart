@@ -6,6 +6,7 @@ class SecureStorageService {
   static const _locationStateNameKey = 'location_state_name';
   static const _locationDistrictIdKey = 'location_district_id';
   static const _locationDistrictNameKey = 'location_district_name';
+  static const _themeModeKey = 'theme_mode';
 
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
@@ -36,8 +37,10 @@ class SecureStorageService {
     await _storage.write(key: _locationDistrictNameKey, value: districtName);
   }
 
-  Future<({int? stateId, String? stateName, int? districtId, String? districtName})>
-      readLocation() async {
+  Future<
+    ({int? stateId, String? stateName, int? districtId, String? districtName})
+  >
+  readLocation() async {
     final stateIdRaw = await _storage.read(key: _locationStateIdKey);
     final districtIdRaw = await _storage.read(key: _locationDistrictIdKey);
 
@@ -54,5 +57,13 @@ class SecureStorageService {
     await _storage.delete(key: _locationStateNameKey);
     await _storage.delete(key: _locationDistrictIdKey);
     await _storage.delete(key: _locationDistrictNameKey);
+  }
+
+  Future<void> writeThemeMode(String value) async {
+    await _storage.write(key: _themeModeKey, value: value);
+  }
+
+  Future<String?> readThemeMode() async {
+    return _storage.read(key: _themeModeKey);
   }
 }

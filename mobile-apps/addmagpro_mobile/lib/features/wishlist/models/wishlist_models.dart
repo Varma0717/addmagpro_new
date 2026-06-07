@@ -38,7 +38,7 @@ class WishlistItem {
           _toDouble(product['final_price']) ??
           _toDouble(product['price']) ??
           0,
-      primaryImageUrl: AppConfig.resolveImageUrl(
+      primaryImageUrl: _resolveFirstImageUrl(
         json['primary_image_url'] as String? ??
             product['primary_image_url'] as String? ??
             product['image_url'] as String? ??
@@ -70,5 +70,18 @@ class WishlistItem {
         .toLowerCase()
         .replaceAll(RegExp(r'[^a-z0-9]+'), '-')
         .replaceAll(RegExp(r'^-+|-+$'), '');
+  }
+
+  static String? _resolveFirstImageUrl(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final cleaned = value
+        .replaceAll('"', '')
+        .replaceAll("'", '')
+        .replaceAll('\\', '/');
+    final first = cleaned
+        .split(',')
+        .map((entry) => entry.trim())
+        .firstWhere((entry) => entry.isNotEmpty, orElse: () => '');
+    return first.isEmpty ? null : AppConfig.resolveImageUrl(first);
   }
 }

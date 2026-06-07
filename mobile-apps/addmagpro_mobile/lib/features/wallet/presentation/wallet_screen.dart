@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
+import '../../../app_state.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_widgets.dart';
@@ -12,9 +13,10 @@ import '../models/wallet_models.dart';
 enum _WalletTab { pay, scan, send, selfTransfer, addWallet }
 
 class WalletScreen extends StatefulWidget {
-  const WalletScreen({super.key, required this.token});
+  const WalletScreen({super.key, required this.token, this.appState});
 
   final String token;
+  final AppState? appState;
 
   @override
   State<WalletScreen> createState() => _WalletScreenState();
@@ -82,6 +84,7 @@ class _WalletScreenState extends State<WalletScreen> {
     });
     try {
       final wallet = await _repository.fetch(widget.token);
+      await widget.appState?.refreshProfile();
       if (!mounted) return;
       setState(() => _wallet = wallet);
     } catch (error) {

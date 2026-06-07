@@ -125,9 +125,7 @@ class ProductApiController extends Controller
             }
 
             $formatted = $this->formatProductResponse($product);
-            $formatted['images'] = array_values(array_filter([
-                $formatted['primary_image_url'] ?? null,
-            ]));
+            $formatted['images'] = $this->extractImageList($product->product_images);
             $formatted['reviews'] = [];
             $formatted['stock'] = 999;
             $formatted['short_description'] = $formatted['description'];
@@ -238,7 +236,8 @@ class ProductApiController extends Controller
 
     private function formatProductResponse(Product $product): array
     {
-        $image = trim((string) ($product->product_images ?? ''));
+        $images = $this->extractImageList($product->product_images);
+        $primaryImage = $images[0] ?? null;
         $slug = Str::slug((string) $product->product_name);
 
         return [
@@ -254,11 +253,45 @@ class ProductApiController extends Controller
             'price' => (float) ($product->unit_price ?? 0),
             'effective_price' => (float) ($product->unit_price ?? 0),
             'cost_price' => (float) ($product->purchase_price ?? 0),
-            'primary_image_url' => $image !== '' ? $image : null,
-            'image_url' => $image !== '' ? $image : null,
+            'primary_image_url' => $primaryImage,
+            'image_url' => $primaryImage,
+            'images' => $images,
             'rating_avg' => null,
             'created_at' => $product->created_at ? $product->created_at->toIso8601String() : null,
         ];
+    }
+
+    private function extractImageList(mixed $raw): array
+    {
+        if ($raw === null) {
+            return [];
+        }
+
+        if (is_array($raw)) {
+            return array_values(array_filter(array_map(function ($value) {
+                return is_string($value) ? trim($value) : null;
+            }, $raw)));
+        }
+
+        $value = trim((string) $raw);
+        if ($value === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return array_values(array_filter(array_map(function ($item) {
+                if (is_string($item)) {
+                    return trim($item);
+                }
+                if (is_array($item)) {
+                    return isset($item['image_url']) ? trim((string) $item['image_url']) : null;
+                }
+                return null;
+            }, $decoded)));
+        }
+
+        return array_values(array_filter(array_map('trim', preg_split('/\s*,\s*/', $value) ?: [])));
     }
 
     private function resolveCategoryName(int $categoryId): string

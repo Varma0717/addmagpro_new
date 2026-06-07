@@ -6,8 +6,8 @@
         <div class="admin-section-body">
             <div class="d-flex align-items-center justify-content-between mb-4">
                 <div>
-                    <h2 class="admin-page-title">Wallet Administration</h2>
-                    <p class="admin-page-subtitle">Monitor wallet health and process withdrawal requests used by mobile + web APIs.</p>
+                    <h2 class="admin-page-title">Wallet Command Center</h2>
+                    <p class="admin-page-subtitle">Amazon-style wallet monitoring for balances, withdrawal queue and customer wallet health.</p>
                 </div><a class="btn btn-theme" href="{{ route('admin_ops') }}">Back to Hub</a>
             </div>
 
@@ -16,15 +16,23 @@
                     <div class="stat-card">
                         <div class="stat-info">
                             <div class="stat-label">User Wallet Balance</div>
-                            <div class="stat-value">{{ number_format($summary['walletBalance'], 2) }}</div>
+                            <div class="stat-value">₹{{ number_format($summary['walletBalance'], 2) }}</div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="stat-card">
                         <div class="stat-info">
-                            <div class="stat-label">Total Transactions</div>
-                            <div class="stat-value">{{ $summary['totalTransactions'] }}</div>
+                            <div class="stat-label">Credit Volume</div>
+                            <div class="stat-value">₹{{ number_format($summary['creditVolume'], 2) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <div class="stat-label">Debit Volume</div>
+                            <div class="stat-value">₹{{ number_format($summary['debitVolume'], 2) }}</div>
                         </div>
                     </div>
                 </div>
@@ -36,19 +44,74 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-info">
-                            <div class="stat-label">Completed Withdrawals</div>
-                            <div class="stat-value">{{ $summary['completedWithdrawals'] }}</div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-lg-5">
+                    <div class="card admin-card h-100">
+                        <div class="card-header admin-card-header d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">Top Wallet Customers</h4>
+                            <span class="text-muted small">Highest balances</span>
+                        </div>
+                        <div class="card-body admin-card-body">
+                            @forelse($topWalletUsers as $user)
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                <div>
+                                    <div class="fw-semibold">{{ $user->name ?: 'User #'.$user->id }}</div>
+                                    <div class="text-muted small">{{ $user->phone ?: $user->email }}</div>
+                                </div>
+                                <div class="fw-bold text-success">₹{{ number_format((float) $user->wallet_balance, 2) }}</div>
+                            </div>
+                            @empty
+                            <div class="text-muted">No wallet balances found.</div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="card admin-card h-100">
+                        <div class="card-header admin-card-header d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">Pending Withdrawal Queue</h4>
+                            <span class="text-muted small">Process fastest first</span>
+                        </div>
+                        <div class="card-body admin-card-body p-0">
+                            <div class="table-responsive admin-table-wrap">
+                                <table class="table admin-table align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>User</th>
+                                            <th>Amount</th>
+                                            <th>Requested</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($pendingWithdrawals as $txn)
+                                        <tr>
+                                            <td>{{ $txn->id }}</td>
+                                            <td>{{ optional($txn->user)->name ?? 'User #'.$txn->user_id }}<br><small class="text-muted">{{ optional($txn->user)->phone ?? optional($txn->user)->email }}</small></td>
+                                            <td class="fw-bold">₹{{ number_format((float) $txn->amount, 2) }}</td>
+                                            <td>{{ optional($txn->created_at)->format('d M Y h:i A') }}</td>
+                                            <td><span class="status-badge badge-pending">Pending</span></td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-4">No pending withdrawals.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="card admin-card">
-                <div class="card-header admin-card-header">
-                    <h4>Wallet Transactions</h4>
+                <div class="card-header admin-card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Wallet Ledger</h4>
+                    <span class="text-muted small">{{ $summary['totalTransactions'] }} transactions • {{ $summary['completedWithdrawals'] }} completed withdrawals</span>
                 </div>
                 <div class="card-body admin-card-body p-0">
                     <div class="table-responsive admin-table-wrap">

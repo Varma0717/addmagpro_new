@@ -13,10 +13,10 @@ class WalletOverview {
 
   factory WalletOverview.fromJson(Map<String, dynamic> json) {
     return WalletOverview(
-      balance: (json['balance'] as num?)?.toDouble() ?? 0,
+      balance: _toDouble(json['balance']) ?? 0,
       presetAmounts: (json['preset_amounts'] as List<dynamic>? ?? <dynamic>[])
-          .whereType<num>()
-          .map((value) => value.toInt())
+          .map(_toInt)
+          .whereType<int>()
           .toList(),
       transactions: (json['transactions'] as List<dynamic>? ?? <dynamic>[])
           .whereType<Map<String, dynamic>>()
@@ -54,12 +54,12 @@ class WalletTransactionItem {
 
   factory WalletTransactionItem.fromJson(Map<String, dynamic> json) {
     return WalletTransactionItem(
-      id: (json['id'] as num?)?.toInt() ?? 0,
+      id: _toInt(json['id']) ?? 0,
       type: json['type'] as String? ?? 'debit',
-      amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      amount: _toDouble(json['amount']) ?? 0,
       description: json['description'] as String? ?? '-',
       referenceType: json['reference_type'] as String?,
-      balanceAfter: (json['balance_after'] as num?)?.toDouble() ?? 0,
+      balanceAfter: _toDouble(json['balance_after']) ?? 0,
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
     );
   }
@@ -84,9 +84,9 @@ class WithdrawRequestItem {
 
   factory WithdrawRequestItem.fromJson(Map<String, dynamic> json) {
     return WithdrawRequestItem(
-      id: (json['id'] as num?)?.toInt() ?? 0,
+      id: _toInt(json['id']) ?? 0,
       requestNo: json['request_no'] as String? ?? '-',
-      amount: (json['amount'] as num?)?.toDouble() ?? 0,
+      amount: _toDouble(json['amount']) ?? 0,
       status: json['status'] as String? ?? 'pending',
       remarks: json['remarks'] as String?,
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
@@ -111,7 +111,7 @@ class WalletTopupOrder {
     return WalletTopupOrder(
       orderId:
           (json['order_id'] as String?) ?? (json['orderId'] as String?) ?? '',
-      amount: (json['amount'] as num?)?.toInt() ?? 0,
+      amount: _toInt(json['amount']) ?? 0,
       currency: json['currency'] as String? ?? 'INR',
       keyId:
           (json['key_id'] as String?) ??
@@ -119,4 +119,20 @@ class WalletTopupOrder {
           '',
     );
   }
+}
+
+int? _toInt(dynamic value) {
+  if (value == null) return null;
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
+}
+
+double? _toDouble(dynamic value) {
+  if (value == null) return null;
+  if (value is double) return value;
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
 }

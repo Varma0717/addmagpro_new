@@ -329,15 +329,35 @@ class AdminOperationsController extends Controller
             'completedWithdrawals' => UserWalletTransaction::where('transaction_type', 'withdraw_request')
                 ->where('status', 'completed')
                 ->count(),
+            'creditVolume' => (float) UserWalletTransaction::where('type', 'credit')->sum('amount'),
+            'debitVolume' => (float) UserWalletTransaction::where('type', 'debit')->sum('amount'),
         ];
 
         $transactions = UserWalletTransaction::with('user:id,name,phone,email')
             ->latest('id')
             ->paginate(30);
 
+        $topWalletUsers = collect();
+        if (Schema::hasTable('users') && Schema::hasColumn('users', 'wallet_balance')) {
+            $topWalletUsers = DB::table('users')
+                ->select(['id', 'name', 'phone', 'email', 'wallet_balance'])
+                ->orderByDesc('wallet_balance')
+                ->limit(8)
+                ->get();
+        }
+
+        $pendingWithdrawals = UserWalletTransaction::with('user:id,name,phone,email')
+            ->where('transaction_type', 'withdraw_request')
+            ->where('status', 'pending')
+            ->latest('id')
+            ->limit(8)
+            ->get();
+
         return view('admin_pages.operations.wallet', [
             'summary' => $summary,
             'transactions' => $transactions,
+            'topWalletUsers' => $topWalletUsers,
+            'pendingWithdrawals' => $pendingWithdrawals,
         ]);
     }
 

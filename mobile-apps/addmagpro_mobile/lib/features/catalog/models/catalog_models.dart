@@ -137,7 +137,7 @@ class ProductListItem {
           _toDouble(json['price']) ??
           _toDouble(json['unit_price']) ??
           0,
-      primaryImageUrl: AppConfig.resolveImageUrl(
+      primaryImageUrl: _resolveFirstImageUrl(
         json['primary_image_url'] as String? ??
             json['image_url'] as String? ??
             json['product_images'] as String?,
@@ -209,36 +209,13 @@ class ProductDetail {
     final reviews = data['reviews'];
     final category = data['category'];
 
-    final fallbackImage = AppConfig.resolveImageUrl(
+    final fallbackImage = _resolveFirstImageUrl(
       data['primary_image_url'] as String? ??
           data['image_url'] as String? ??
           data['product_images'] as String?,
     );
 
-    final parsedImages = images is List
-        ? images
-              .map((e) {
-                if (e is String) {
-                  return AppConfig.resolveImageUrl(e);
-                }
-                if (e is Map<String, dynamic>) {
-                  return AppConfig.resolveImageUrl(
-                    e['image_url'] as String? ??
-                        e['url'] as String? ??
-                        e['path'] as String?,
-                  );
-                }
-                return null;
-              })
-              .whereType<String>()
-              .toList(growable: false)
-        : (images is String && images.trim().isNotEmpty
-              ? images
-                    .split(',')
-                    .map((value) => AppConfig.resolveImageUrl(value.trim()))
-                    .whereType<String>()
-                    .toList(growable: false)
-              : <String>[]);
+    final parsedImages = _extractResolvedImageUrls(images);
 
     return ProductDetail(
       id: _toInt(data['id']) ?? _toInt(data['product_id']) ?? 0,
@@ -579,4 +556,60 @@ double? _toDouble(dynamic value) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value);
   return null;
+}
+
+List<String> _extractResolvedImageUrls(dynamic value) {
+  if (value == null) return <String>[];
+
+  if (value is List) {
+    return value
+        .expand((entry) => _extractResolvedImageUrls(entry))
+        .toSet()
+        .toList(growable: false);
+  }
+
+  if (value is Map<String, dynamic>) {
+    return _extractResolvedImageUrls(
+      value['image_url'] ?? value['url'] ?? value['path'],
+    );
+  }
+
+  if (value is! String) {
+    return <String>[];
+  }
+
+  final trimmed = value.trim();
+  if (trimmed.isEmpty) return <String>[];
+
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    final inner = trimmed.substring(1, trimmed.length - 1).trim();
+    if (inner.isNotEmpty) {
+      return inner
+          .split(',')
+          .expand((entry) => _extractResolvedImageUrls(entry))
+          .toSet()
+          .toList(growable: false);
+    }
+  }
+
+  final cleaned = trimmed
+      .replaceAll('"', '')
+      .replaceAll("'", '')
+      .replaceAll('\\', '/');
+
+  if (cleaned.contains(',')) {
+    return cleaned
+        .split(',')
+        .expand((entry) => _extractResolvedImageUrls(entry))
+        .toSet()
+        .toList(growable: false);
+  }
+
+  final resolved = AppConfig.resolveImageUrl(cleaned);
+  return resolved == null ? <String>[] : <String>[resolved];
+}
+
+String? _resolveFirstImageUrl(dynamic value) {
+  final images = _extractResolvedImageUrls(value);
+  return images.isEmpty ? null : images.first;
 }

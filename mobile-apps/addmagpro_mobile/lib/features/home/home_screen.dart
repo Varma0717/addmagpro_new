@@ -23,6 +23,8 @@ import '../wishlist/presentation/wishlist_screen.dart';
 import 'data/home_repository.dart';
 import 'models/home_feed_models.dart';
 import '../notifications/presentation/notifications_screen.dart';
+import '../referral/data/referral_repository.dart';
+import '../referral/models/referral_models.dart';
 import '../search/presentation/search_screen.dart';
 import '../location/services/geo_location_service.dart';
 
@@ -103,15 +105,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
                   child: _buildWalletChip(context),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) =>
-                          SearchScreen(appState: widget.appState, token: token),
-                    ),
-                  ),
-                  icon: const Icon(Icons.search_rounded),
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).push(
@@ -227,7 +220,10 @@ class _HomeScreenState extends State<HomeScreen> {
       borderRadius: BorderRadius.circular(20),
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute<void>(
-          builder: (_) => WalletScreen(token: widget.appState.token ?? ''),
+          builder: (_) => WalletScreen(
+            token: widget.appState.token ?? '',
+            appState: widget.appState,
+          ),
         ),
       ),
       child: Container(
@@ -253,7 +249,10 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(width: 4),
               Text(
                 walletLabel,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ],
@@ -326,18 +325,23 @@ class _DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<_DashboardView> {
   late final HomeRepository _repository;
+  late final ReferralRepository _referralRepository;
   final PageController _bannerController = PageController();
   final PageController _promoController = PageController();
   final stt.SpeechToText _speech = stt.SpeechToText();
   Timer? _bannerTimer;
+  Timer? _promoTimer;
   bool _loading = true;
   String? _error;
   HomeFeed? _feed;
+  ReferralResponse? _referralData;
 
   @override
   void initState() {
     super.initState();
-    _repository = HomeRepository(apiClient: ApiClient());
+    final apiClient = ApiClient();
+    _repository = HomeRepository(apiClient: apiClient);
+    _referralRepository = ReferralRepository(apiClient: apiClient);
     _tryAutoDetectLocation();
     _load();
   }
@@ -367,6 +371,7 @@ class _DashboardViewState extends State<_DashboardView> {
   @override
   void dispose() {
     _bannerTimer?.cancel();
+    _promoTimer?.cancel();
     _bannerController.dispose();
     _promoController.dispose();
     super.dispose();
@@ -450,8 +455,17 @@ class _DashboardViewState extends State<_DashboardView> {
         stateId: widget.stateId,
         districtId: widget.districtId,
       );
+      ReferralResponse? referralData;
+      try {
+        referralData = await _referralRepository.fetch(widget.token);
+      } catch (_) {
+        referralData = null;
+      }
       if (!mounted) return;
-      setState(() => _feed = response);
+      setState(() {
+        _feed = response;
+        _referralData = referralData;
+      });
       _startBannerAutoScroll();
     } catch (error) {
       if (!mounted) return;
@@ -472,6 +486,21 @@ class _DashboardViewState extends State<_DashboardView> {
       _bannerController.animateToPage(
         next,
         duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  void _startPromoAutoScroll(int itemCount) {
+    _promoTimer?.cancel();
+    if (itemCount <= 1) return;
+
+    _promoTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!mounted || !_promoController.hasClients) return;
+      final next = ((_promoController.page?.round() ?? 0) + 1) % itemCount;
+      _promoController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 450),
         curve: Curves.easeInOut,
       );
     });
@@ -525,6 +554,7 @@ class _DashboardViewState extends State<_DashboardView> {
     final bannerItems = validBannerImages.isNotEmpty
         ? validBannerImages
         : fallbackBannerImages;
+    _startPromoAutoScroll(bannerItems.length);
 
     return RefreshIndicator(
       color: AppColors.primary,
@@ -532,6 +562,56 @@ class _DashboardViewState extends State<_DashboardView> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: () => _openSearch(),
+                    child: Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.borderLight),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.search_rounded,
+                            color: AppColors.textMuted,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Search products and services',
+                              style: TextStyle(color: AppColors.textMuted),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                _QuickActionIcon(
+                  icon: Icons.mic_none_rounded,
+                  onTap: _startVoiceSearch,
+                ),
+                const SizedBox(width: 8),
+                _QuickActionIcon(
+                  icon: Icons.qr_code_scanner_rounded,
+                  onTap: _startBarcodeScan,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
           // ── Banner Carousel ──
           if (bannerItems.isNotEmpty) ...[
             SizedBox(
@@ -662,56 +742,6 @@ class _DashboardViewState extends State<_DashboardView> {
                   ),
                 ],
               ),
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: () => _openSearch(),
-                    child: Container(
-                      height: 48,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.borderLight),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(
-                            Icons.search_rounded,
-                            color: AppColors.textMuted,
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Search products and services',
-                              style: TextStyle(color: AppColors.textMuted),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                _QuickActionIcon(
-                  icon: Icons.mic_none_rounded,
-                  onTap: _startVoiceSearch,
-                ),
-                const SizedBox(width: 8),
-                _QuickActionIcon(
-                  icon: Icons.qr_code_scanner_rounded,
-                  onTap: _startBarcodeScan,
-                ),
-              ],
             ),
           ),
 
@@ -1076,64 +1106,6 @@ class _DashboardViewState extends State<_DashboardView> {
             const SizedBox(height: 24),
           ],
 
-          if (bannerItems.isNotEmpty) ...[
-            SectionHeader(
-              title: 'Promotions',
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 150,
-              child: Stack(
-                children: [
-                  PageView.builder(
-                    controller: _promoController,
-                    itemCount: bannerItems.length,
-                    itemBuilder: (_, index) {
-                      final banner = bannerItems[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child:
-                              (banner.imageUrl != null &&
-                                  banner.imageUrl!.isNotEmpty)
-                              ? CachedNetworkImage(
-                                  imageUrl: banner.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (_, _, _) =>
-                                      _bannerPlaceholder(),
-                                )
-                              : _bannerPlaceholder(),
-                        ),
-                      );
-                    },
-                  ),
-                  if (bannerItems.length > 1)
-                    Positioned(
-                      bottom: 12,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: SmoothPageIndicator(
-                          controller: _promoController,
-                          count: bannerItems.length,
-                          effect: const WormEffect(
-                            dotWidth: 7,
-                            dotHeight: 7,
-                            activeDotColor: Colors.white,
-                            dotColor: Colors.white38,
-                            spacing: 6,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-
           // ── Recommended Products ──
           if (feed.recommendedProducts.isNotEmpty) ...[
             SectionHeader(
@@ -1186,6 +1158,126 @@ class _DashboardViewState extends State<_DashboardView> {
             const SizedBox(height: 24),
           ],
 
+          if (bannerItems.isNotEmpty) ...[
+            SectionHeader(
+              title: 'Recommended Benefits',
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 220,
+              child: Stack(
+                children: [
+                  PageView.builder(
+                    controller: _promoController,
+                    itemCount: bannerItems.length,
+                    itemBuilder: (_, index) {
+                      final banner = bannerItems[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              (banner.imageUrl != null &&
+                                      banner.imageUrl!.isNotEmpty)
+                                  ? CachedNetworkImage(
+                                      imageUrl: banner.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, _, _) =>
+                                          _bannerPlaceholder(),
+                                    )
+                                  : _bannerPlaceholder(),
+                              Positioned(
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    14,
+                                    28,
+                                    14,
+                                    14,
+                                  ),
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent,
+                                        Colors.black87,
+                                      ],
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if ((banner.title ?? '')
+                                          .trim()
+                                          .isNotEmpty)
+                                        Text(
+                                          banner.title!,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      if ((banner.subtitle ?? '')
+                                          .trim()
+                                          .isNotEmpty) ...[
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          banner.subtitle!,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  if (bannerItems.length > 1)
+                    Positioned(
+                      bottom: 12,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: SmoothPageIndicator(
+                          controller: _promoController,
+                          count: bannerItems.length,
+                          effect: const WormEffect(
+                            dotWidth: 7,
+                            dotHeight: 7,
+                            activeDotColor: Colors.white,
+                            dotColor: Colors.white38,
+                            spacing: 6,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
@@ -1225,7 +1317,9 @@ class _DashboardViewState extends State<_DashboardView> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  _AccountLevelProgress(currentLevel: _currentLevel(user?.referralCode)),
+                  _AccountLevelProgress(
+                    currentLevel: _currentLevel(_referralData),
+                  ),
                 ],
               ),
             ),
@@ -1602,88 +1696,6 @@ class _FeaturedProductCard extends StatelessWidget {
   );
 }
 
-// ── Service Card ─────────────────────────────────────────────────────
-
-class _ServiceCard extends StatelessWidget {
-  const _ServiceCard({required this.listing});
-  final HomeListingItem listing;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          builder: (_) => ListingDetailScreen(slug: listing.slug),
-        ),
-      ),
-      child: Container(
-        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border, width: 0.5),
-        ),
-        child: Row(
-          children: [
-            // Avatar
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                color: AppColors.primaryLight,
-              ),
-              child: listing.primaryImageUrl != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: CachedNetworkImage(
-                        imageUrl: listing.primaryImageUrl!,
-                        fit: BoxFit.cover,
-                        errorWidget: (_, _, _) => const Icon(
-                          Icons.storefront_rounded,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                    )
-                  : const Icon(
-                      Icons.storefront_rounded,
-                      color: AppColors.primary,
-                    ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    listing.businessName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    '${listing.category ?? 'Service'} • ${listing.city ?? '-'}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (listing.ratingAvg != null)
-              StarRating(rating: listing.ratingAvg!, size: 12),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _HomeNavTile extends StatelessWidget {
   const _HomeNavTile({
     required this.icon,
@@ -1777,13 +1789,17 @@ class _AccountLevelProgress extends StatelessWidget {
   }
 }
 
-int _currentLevel(String? referralCode) {
-  if (referralCode == null || referralCode.trim().isEmpty) {
-    return 1;
+int _currentLevel(ReferralResponse? referralData) {
+  final levels = referralData?.levelSummary ?? const <LevelSummary>[];
+  var currentLevel = 1;
+
+  for (final level in levels) {
+    if (level.members > 0 && level.depth > currentLevel) {
+      currentLevel = level.depth;
+    }
   }
 
-  final hash = referralCode.codeUnits.fold<int>(0, (sum, unit) => sum + unit);
-  return (hash % 5) + 1;
+  return currentLevel.clamp(1, 5);
 }
 
 class _AccountLevelRow extends StatelessWidget {
@@ -1810,74 +1826,6 @@ class _AccountLevelRow extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ── Offer Card ──────────────────────────────────────────────────────
-
-class _OfferCard extends StatelessWidget {
-  const _OfferCard({required this.offer});
-  final HomeOfferItem offer;
-
-  @override
-  Widget build(BuildContext context) {
-    final valueLabel = offer.type == 'percentage'
-        ? '${offer.value.toStringAsFixed(0)}% OFF'
-        : '₹${offer.value.toStringAsFixed(0)} OFF';
-    return Container(
-      margin: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFF0FDF4), Color(0xFFECFDF3)],
-        ),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.success.withAlpha(30)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppColors.success,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              offer.code,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-              ),
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  offer.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                Text(
-                  valueLabel,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.success,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

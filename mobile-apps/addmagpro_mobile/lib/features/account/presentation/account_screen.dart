@@ -32,18 +32,34 @@ class AccountScreen extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: AppColors.borderLight),
-            boxShadow: [BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 8, offset: const Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(8),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Row(
             children: [
               CircleAvatar(
                 radius: 30,
                 backgroundColor: AppColors.primaryLight,
-                backgroundImage: user?.avatarUrl != null ? NetworkImage(user!.avatarUrl!) : null,
+                backgroundImage: user?.avatarUrl != null
+                    ? NetworkImage(user!.avatarUrl!)
+                    : null,
                 child: user?.avatarUrl == null
                     ? Text(
-                        (user?.name ?? 'U').trim().characters.first.toUpperCase(),
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.primary),
+                        (user?.name ?? 'U')
+                            .trim()
+                            .characters
+                            .first
+                            .toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.primary,
+                        ),
                       )
                     : null,
               ),
@@ -52,9 +68,22 @@ class AccountScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(user?.name ?? 'Member', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                    Text(
+                      user?.name ?? 'Member',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(user?.phone ?? '', style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                    Text(
+                      user?.phone ?? '',
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -69,19 +98,36 @@ class AccountScreen extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: AppColors.primaryGradient,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: AppColors.primary.withAlpha(40), blurRadius: 12, offset: const Offset(0, 4))],
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withAlpha(40),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Row(
             children: [
-              const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 28),
+              const Icon(
+                Icons.account_balance_wallet_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Wallet Balance', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  const Text(
+                    'Wallet Balance',
+                    style: TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
                   Text(
                     '₹${(user?.walletBalance ?? 0).toStringAsFixed(2)}',
-                    style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ],
               ),
@@ -105,7 +151,10 @@ class AccountScreen extends StatelessWidget {
         _MenuTile(
           icon: Icons.account_balance_wallet_outlined,
           label: 'Wallet',
-          onTap: () => _push(context, WalletScreen(token: token ?? '')),
+          onTap: () => _push(
+            context,
+            WalletScreen(token: token ?? '', appState: appState),
+          ),
         ),
         _MenuTile(
           icon: Icons.notifications_none_rounded,
@@ -123,7 +172,13 @@ class AccountScreen extends StatelessWidget {
           icon: Icons.groups_2_outlined,
           label: 'Referral Network',
           subtitle: 'Earn by inviting friends',
-          onTap: () => _push(context, ReferralScreen(token: token ?? '', memberName: user?.name ?? 'Member')),
+          onTap: () => _push(
+            context,
+            ReferralScreen(
+              token: token ?? '',
+              memberName: user?.name ?? 'Member',
+            ),
+          ),
         ),
         const SizedBox(height: 12),
         _SectionLabel(label: 'Help & Settings'),
@@ -135,7 +190,7 @@ class AccountScreen extends StatelessWidget {
         _MenuTile(
           icon: Icons.settings_outlined,
           label: 'Settings',
-          onTap: () => _push(context, const SettingsScreen()),
+          onTap: () => _push(context, SettingsScreen(appState: appState)),
         ),
         _MenuTile(
           icon: Icons.person_outline_rounded,
@@ -155,8 +210,17 @@ class AccountScreen extends StatelessWidget {
                   title: const Text('Logout'),
                   content: const Text('Are you sure you want to logout?'),
                   actions: [
-                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-                    TextButton(onPressed: () => Navigator.pop(ctx, true), child: Text('Logout', style: TextStyle(color: AppColors.error))),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, false),
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx, true),
+                      child: Text(
+                        'Logout',
+                        style: TextStyle(color: AppColors.error),
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -169,7 +233,9 @@ class AccountScreen extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: AppColors.error.withAlpha(60)),
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
           ),
         ),
@@ -193,14 +259,24 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 8, left: 4),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.textMuted, letterSpacing: 0.5),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textMuted,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
 }
 
 class _MenuTile extends StatelessWidget {
-  const _MenuTile({required this.icon, required this.label, required this.onTap, this.subtitle});
+  const _MenuTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.subtitle,
+  });
 
   final IconData icon;
   final String label;
@@ -227,11 +303,27 @@ class _MenuTile extends StatelessWidget {
           ),
           child: Icon(icon, color: AppColors.primary, size: 20),
         ),
-        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.textPrimary)),
+        title: Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+            color: AppColors.textPrimary,
+          ),
+        ),
         subtitle: subtitle != null
-            ? Text(subtitle!, style: const TextStyle(fontSize: 12, color: AppColors.textMuted))
+            ? Text(
+                subtitle!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textMuted,
+                ),
+              )
             : null,
-        trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+        trailing: const Icon(
+          Icons.chevron_right_rounded,
+          color: AppColors.textMuted,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );

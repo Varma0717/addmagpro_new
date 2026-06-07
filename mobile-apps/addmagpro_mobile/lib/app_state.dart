@@ -22,6 +22,7 @@ class AppState extends ChangeNotifier {
   LocationStateOption? _selectedState;
   LocationDistrictOption? _selectedDistrict;
   bool _loadingLocations = false;
+  ThemeMode _themeMode = ThemeMode.system;
 
   bool get booting => _booting;
   bool get busy => _busy;
@@ -33,12 +34,14 @@ class AppState extends ChangeNotifier {
   LocationStateOption? get selectedState => _selectedState;
   LocationDistrictOption? get selectedDistrict => _selectedDistrict;
   bool get loadingLocations => _loadingLocations;
+  ThemeMode get themeMode => _themeMode;
 
   Future<void> initialize() async {
     _booting = true;
     notifyListeners();
 
     final token = await _authRepository.readToken();
+    await _restoreThemeMode();
     await _restoreLocation();
     await _loadLocationStates();
 
@@ -132,7 +135,8 @@ class AppState extends ChangeNotifier {
       name: saved.stateName!.trim(),
     );
 
-    if (saved.districtId != null && (saved.districtName ?? '').trim().isNotEmpty) {
+    if (saved.districtId != null &&
+        (saved.districtName ?? '').trim().isNotEmpty) {
       _selectedDistrict = LocationDistrictOption(
         id: saved.districtId!,
         name: saved.districtName!.trim(),
@@ -170,10 +174,7 @@ class AppState extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadDistrictsForState(
-    int stateId, {
-    bool notify = true,
-  }) async {
+  Future<void> _loadDistrictsForState(int stateId, {bool notify = true}) async {
     final districts = await _locationRepository.fetchDistricts(stateId);
     _locationDistricts = districts;
 
@@ -235,6 +236,27 @@ class AppState extends ChangeNotifier {
     final me = await _authRepository.me(_token!);
     _currentUser = me;
     notifyListeners();
+  }
+
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _themeMode = mode;
+    await _storage.writeThemeMode(_themeMode.name);
+    notifyListeners();
+  }
+
+  Future<void> _restoreThemeMode() async {
+    final stored = await _storage.readThemeMode();
+    switch (stored) {
+      case 'light':
+        _themeMode = ThemeMode.light;
+        break;
+      case 'dark':
+        _themeMode = ThemeMode.dark;
+        break;
+      default:
+        _themeMode = ThemeMode.system;
+        break;
+    }
   }
 
   void replaceCurrentUser(AuthUser user) {

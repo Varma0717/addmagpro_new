@@ -110,10 +110,24 @@ class _AddMagProAppState extends State<AddMagProApp> {
     return AnimatedBuilder(
       animation: _appState,
       builder: (context, _) {
+        final themeMode = _appState.themeMode;
+        final isDark = themeMode == ThemeMode.dark;
+
+        SystemChrome.setSystemUIOverlayStyle(
+          SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: isDark
+                ? Brightness.light
+                : Brightness.dark,
+          ),
+        );
+
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: AppConfig.appName,
           theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: themeMode,
           navigatorKey: _navigatorKey,
           home: _rootScreen(),
         );
@@ -129,7 +143,11 @@ class _AddMagProAppState extends State<AddMagProApp> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/branding/logo_square.png', width: 80, height: 80),
+              Image.asset(
+                'assets/branding/logo_square.png',
+                width: 80,
+                height: 80,
+              ),
               const SizedBox(height: 20),
               const Text(
                 'AddMagPro',
