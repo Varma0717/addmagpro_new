@@ -32,11 +32,14 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _error = null);
 
     try {
+      print('🔐 Attempting login with phone: ${_phoneController.text.trim()}');
       await widget.appState.login(
         phone: _phoneController.text.trim(),
         password: _passwordController.text,
       );
+      print('✅ Login successful!');
     } catch (e) {
+      print('❌ Login error: $e');
       setState(() => _error = e.toString());
     }
   }
@@ -65,17 +68,39 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(color: AppColors.borderLight),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4)),
+                          BoxShadow(
+                            color: Colors.black.withAlpha(10),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      child: Image.asset('assets/branding/logo.png', fit: BoxFit.contain),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      child: Image.asset(
+                        'assets/branding/logo.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 28),
-                  const Text('Welcome back', textAlign: TextAlign.center, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  const Text(
+                    'Welcome back',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  const Text('Sign in to your AddMagPro account', textAlign: TextAlign.center, style: TextStyle(fontSize: 15, color: AppColors.textMuted)),
+                  const Text(
+                    'Sign in to your AddMagPro account',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 15, color: AppColors.textMuted),
+                  ),
                   const SizedBox(height: 32),
                   if (_error != null)
                     Container(
@@ -84,13 +109,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.errorLight,
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.error.withAlpha(40)),
+                        border: Border.all(
+                          color: AppColors.error.withAlpha(40),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                          const Icon(
+                            Icons.error_outline,
+                            color: AppColors.error,
+                            size: 20,
+                          ),
                           const SizedBox(width: 10),
-                          Expanded(child: Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13))),
+                          Expanded(
+                            child: Text(
+                              _error!,
+                              style: const TextStyle(
+                                color: AppColors.error,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -101,11 +140,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
-                          decoration: const InputDecoration(labelText: 'Phone number', hintText: 'Enter your mobile number', prefixIcon: Icon(Icons.phone_android_rounded, size: 20)),
+                          decoration: const InputDecoration(
+                            labelText: 'Phone number',
+                            hintText: 'Enter your mobile number',
+                            prefixIcon: Icon(
+                              Icons.phone_android_rounded,
+                              size: 20,
+                            ),
+                          ),
                           validator: (value) {
                             final v = value?.trim() ?? '';
                             if (v.isEmpty) return 'Phone number is required';
-                            if (v.length < 10) return 'Enter a valid phone number';
+                            if (v.length < 10)
+                              return 'Enter a valid phone number';
                             return null;
                           },
                         ),
@@ -116,15 +163,38 @@ class _LoginScreenState extends State<LoginScreen> {
                           decoration: InputDecoration(
                             labelText: 'Password',
                             hintText: 'Enter your password',
-                            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                            suffixIcon: IconButton(icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20), onPressed: () => setState(() => _obscure = !_obscure)),
+                            prefixIcon: const Icon(
+                              Icons.lock_outline_rounded,
+                              size: 20,
+                            ),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscure
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                size: 20,
+                              ),
+                              onPressed: () =>
+                                  setState(() => _obscure = !_obscure),
+                            ),
                           ),
-                          validator: (value) => (value ?? '').isEmpty ? 'Password is required' : null,
+                          validator: (value) => (value ?? '').isEmpty
+                              ? 'Password is required'
+                              : null,
                         ),
                         const SizedBox(height: 28),
                         FilledButton(
                           onPressed: busy ? null : _submit,
-                          child: busy ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white)) : const Text('Sign In'),
+                          child: busy
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Sign In'),
                         ),
                       ],
                     ),
@@ -133,10 +203,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account? ", style: TextStyle(color: AppColors.textMuted)),
+                      const Text(
+                        "Don't have an account? ",
+                        style: TextStyle(color: AppColors.textMuted),
+                      ),
                       GestureDetector(
-                        onTap: busy ? null : () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => RegisterScreen(appState: widget.appState))),
-                        child: const Text('Sign Up', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                        onTap: busy
+                            ? null
+                            : () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) =>
+                                      RegisterScreen(appState: widget.appState),
+                                ),
+                              ),
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                     ],
                   ),

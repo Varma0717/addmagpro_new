@@ -42,6 +42,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _error = null);
 
     try {
+      print(
+        '📝 Attempting registration with phone: ${_phoneController.text.trim()}',
+      );
       await widget.appState.register(
         name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
@@ -50,10 +53,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: _passwordController.text,
         passwordConfirmation: _confirmPasswordController.text,
       );
+      print('✅ Registration successful!');
       if (mounted) {
         Navigator.of(context).pop();
       }
     } catch (e) {
+      print('❌ Registration error: $e');
       setState(() => _error = e.toString());
     }
   }
@@ -64,7 +69,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(title: const Text('Create Account'), backgroundColor: Colors.white),
+      appBar: AppBar(
+        title: const Text('Create Account'),
+        backgroundColor: Colors.white,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
@@ -78,22 +86,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Container(
                     width: 124,
                     height: 56,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: AppColors.borderLight),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 12, offset: const Offset(0, 4)),
+                        BoxShadow(
+                          color: Colors.black.withAlpha(10),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
                       ],
                     ),
-                    child: Image.asset('assets/branding/logo.png', fit: BoxFit.contain),
+                    child: Image.asset(
+                      'assets/branding/logo.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text('Join AddMagPro', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                const Text(
+                  'Join AddMagPro',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                const Text('Create your account and start earning', style: TextStyle(fontSize: 14, color: AppColors.textMuted)),
+                const Text(
+                  'Create your account and start earning',
+                  style: TextStyle(fontSize: 14, color: AppColors.textMuted),
+                ),
                 const SizedBox(height: 24),
                 if (_error != null)
                   Container(
@@ -105,15 +133,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(color: AppColors.error.withAlpha(40)),
                     ),
-                    child: Row(children: [
-                      const Icon(Icons.error_outline, color: AppColors.error, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(child: Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13))),
-                    ]),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: AppColors.error,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _error!,
+                            style: const TextStyle(
+                              color: AppColors.error,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Full name', prefixIcon: Icon(Icons.person_outline_rounded, size: 20)),
+                  decoration: const InputDecoration(
+                    labelText: 'Full name',
+                    prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                  ),
                   validator: (value) {
                     if ((value ?? '').trim().isEmpty) return 'Name is required';
                     return null;
@@ -123,7 +168,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: 'Phone number', prefixIcon: Icon(Icons.phone_android_rounded, size: 20)),
+                  decoration: const InputDecoration(
+                    labelText: 'Phone number',
+                    prefixIcon: Icon(Icons.phone_android_rounded, size: 20),
+                  ),
                   validator: (value) {
                     final v = value?.trim() ?? '';
                     if (v.isEmpty) return 'Phone is required';
@@ -135,21 +183,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(labelText: 'Email (optional)', prefixIcon: Icon(Icons.email_outlined, size: 20)),
+                  decoration: const InputDecoration(
+                    labelText: 'Email (optional)',
+                    prefixIcon: Icon(Icons.email_outlined, size: 20),
+                  ),
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _referralController,
                   textCapitalization: TextCapitalization.characters,
-                  decoration: const InputDecoration(labelText: 'Referral code (optional)', prefixIcon: Icon(Icons.card_giftcard_rounded, size: 20)),
+                  decoration: const InputDecoration(
+                    labelText: 'Referral code (optional)',
+                    prefixIcon: Icon(Icons.card_giftcard_rounded, size: 20),
+                  ),
                 ),
                 const SizedBox(height: 14),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscure,
-                  decoration: InputDecoration(labelText: 'Password', prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20), suffixIcon: IconButton(icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 20), onPressed: () => setState(() => _obscure = !_obscure))),
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    prefixIcon: const Icon(
+                      Icons.lock_outline_rounded,
+                      size: 20,
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscure
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        size: 20,
+                      ),
+                      onPressed: () => setState(() => _obscure = !_obscure),
+                    ),
+                  ),
                   validator: (value) {
-                    if ((value ?? '').length < 8) return 'Password must be at least 8 characters';
+                    if ((value ?? '').length < 8)
+                      return 'Password must be at least 8 characters';
                     return null;
                   },
                 ),
@@ -157,7 +227,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: _obscure,
-                  decoration: const InputDecoration(labelText: 'Confirm password', prefixIcon: Icon(Icons.lock_outline_rounded, size: 20)),
+                  decoration: const InputDecoration(
+                    labelText: 'Confirm password',
+                    prefixIcon: Icon(Icons.lock_outline_rounded, size: 20),
+                  ),
                   validator: (value) {
                     if (value != _passwordController.text) {
                       return 'Passwords do not match';
@@ -168,7 +241,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 28),
                 FilledButton(
                   onPressed: busy ? null : _submit,
-                  child: busy ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white)) : const Text('Create Account'),
+                  child: busy
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('Create Account'),
                 ),
               ],
             ),

@@ -246,113 +246,146 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             )
           : _buildContent(product),
       bottomNavigationBar: product != null && product.stock > 0
-          ? Container(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(8),
-                    blurRadius: 10,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: _wishlistBusy ? null : _toggleWishlist,
-                    icon: _wishlistBusy
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Icon(
-                            _wishlisted
-                                ? Icons.favorite_rounded
-                                : Icons.favorite_border_rounded,
-                            color: _wishlisted
-                                ? AppColors.error
-                                : AppColors.textSecondary,
+          ? SafeArea(
+              top: false,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(8),
+                      blurRadius: 10,
+                      offset: const Offset(0, -2),
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  height: 52,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 52,
+                        height: 52,
+                        child: IconButton(
+                          onPressed: _wishlistBusy ? null : _toggleWishlist,
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints.tightFor(
+                            width: 52,
+                            height: 52,
                           ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.surface,
-                      minimumSize: const Size(52, 52),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // Quantity selector
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          onPressed: _quantity > 1
-                              ? () => setState(() => _quantity--)
-                              : null,
-                          icon: const Icon(Icons.remove_rounded, size: 20),
-                          constraints: const BoxConstraints(
-                            minWidth: 40,
-                            minHeight: 40,
+                          icon: _wishlistBusy
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Icon(
+                                  _wishlisted
+                                      ? Icons.favorite_rounded
+                                      : Icons.favorite_border_rounded,
+                                  color: _wishlisted
+                                      ? AppColors.error
+                                      : AppColors.textSecondary,
+                                ),
+                          style: IconButton.styleFrom(
+                            backgroundColor: AppColors.surface,
                           ),
                         ),
-                        SizedBox(
-                          width: 32,
-                          child: Center(
-                            child: Text(
-                              '$_quantity',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: _quantity < product.stock
-                              ? () => setState(() => _quantity++)
-                              : null,
-                          icon: const Icon(Icons.add_rounded, size: 20),
-                          constraints: const BoxConstraints(
-                            minWidth: 40,
-                            minHeight: 40,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Add to Cart
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: _addingToCart ? null : _addToCart,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size(0, 52),
                       ),
-                      child: _addingToCart
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        height: 52,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                onPressed: _quantity > 1
+                                    ? () => setState(() => _quantity--)
+                                    : null,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 40,
+                                  height: 40,
+                                ),
+                                icon: const Icon(
+                                  Icons.remove_rounded,
+                                  size: 20,
+                                ),
                               ),
-                            )
-                          : const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.shopping_cart_rounded, size: 20),
-                                SizedBox(width: 8),
-                                Text('Add to Cart'),
-                              ],
+                              SizedBox(
+                                width: 32,
+                                child: Center(
+                                  child: Text(
+                                    '$_quantity',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                onPressed: _quantity < product.stock
+                                    ? () => setState(() => _quantity++)
+                                    : null,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 40,
+                                  height: 40,
+                                ),
+                                icon: const Icon(Icons.add_rounded, size: 20),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SizedBox(
+                          height: 52,
+                          child: FilledButton(
+                            onPressed: _addingToCart ? null : _addToCart,
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
                             ),
-                    ),
+                            child: _addingToCart
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.shopping_cart_rounded,
+                                        size: 20,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Flexible(child: Text('Add to Cart')),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             )
           : null,

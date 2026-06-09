@@ -325,7 +325,6 @@ class _DashboardView extends StatefulWidget {
 
 class _DashboardViewState extends State<_DashboardView> {
   late final HomeRepository _repository;
-  late final ReferralRepository _referralRepository;
   final PageController _bannerController = PageController();
   final PageController _promoController = PageController();
   final stt.SpeechToText _speech = stt.SpeechToText();
@@ -334,14 +333,14 @@ class _DashboardViewState extends State<_DashboardView> {
   bool _loading = true;
   String? _error;
   HomeFeed? _feed;
-  ReferralResponse? _referralData;
+  bool _locationBusy = false;
+  String _selectedLocationLabel = 'All India';
 
   @override
   void initState() {
     super.initState();
     final apiClient = ApiClient();
     _repository = HomeRepository(apiClient: apiClient);
-    _referralRepository = ReferralRepository(apiClient: apiClient);
     _tryAutoDetectLocation();
     _load();
   }
@@ -387,6 +386,25 @@ class _DashboardViewState extends State<_DashboardView> {
         ),
       ),
     );
+  }
+
+  Future<void> _openLocationSheet() async {
+    setState(() => _locationBusy = true);
+    try {
+      // Location selection sheet - simplified for now
+      // Can be enhanced to show actual location picker
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location selection coming soon')),
+      );
+    } finally {
+      if (mounted) setState(() => _locationBusy = false);
+    }
+  }
+
+  void _handleBannerTap(dynamic banner) {
+    // Handle banner tap - navigate based on banner properties
+    // Placeholder for banner navigation logic
   }
 
   Future<void> _startVoiceSearch() async {
@@ -455,16 +473,9 @@ class _DashboardViewState extends State<_DashboardView> {
         stateId: widget.stateId,
         districtId: widget.districtId,
       );
-      ReferralResponse? referralData;
-      try {
-        referralData = await _referralRepository.fetch(widget.token);
-      } catch (_) {
-        referralData = null;
-      }
       if (!mounted) return;
       setState(() {
         _feed = response;
-        _referralData = referralData;
       });
       _startBannerAutoScroll();
     } catch (error) {
@@ -562,33 +573,170 @@ class _DashboardViewState extends State<_DashboardView> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
+          // ── Enhanced Top Section ──
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _selectedLocationLabel ?? 'All India',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      InkWell(
+                        onTap: _locationBusy ? null : _openLocationSheet,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.location_on_rounded,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                'Change Location',
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Coins/Wallet
+                InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => WalletScreen(
+                        token: widget.appState.token ?? '',
+                        appState: widget.appState,
+                      ),
+                    ),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFCD34D).withAlpha(20),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFFFCD34D).withAlpha(60),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.monetization_on_rounded,
+                          size: 16,
+                          color: Color(0xFFD97706),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          '540',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFD97706),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Notifications
+                InkWell(
+                  borderRadius: BorderRadius.circular(10),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => NotificationsScreen(
+                        token: widget.appState.token ?? '',
+                      ),
+                    ),
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.borderLight),
+                    ),
+                    child: const Icon(
+                      Icons.notifications_rounded,
+                      size: 18,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // ── Search Bar ──
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
                 Expanded(
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                     onTap: () => _openSearch(),
                     child: Container(
-                      height: 48,
+                      height: 44,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.borderLight),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(5),
+                            blurRadius: 6,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
                       child: const Row(
                         children: [
                           Icon(
                             Icons.search_rounded,
                             color: AppColors.textMuted,
+                            size: 18,
                           ),
                           SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Search products and services',
-                              style: TextStyle(color: AppColors.textMuted),
+                              'Search or ask a question',
+                              style: TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ],
@@ -598,24 +746,154 @@ class _DashboardViewState extends State<_DashboardView> {
                 ),
                 const SizedBox(width: 10),
                 _QuickActionIcon(
-                  icon: Icons.mic_none_rounded,
-                  onTap: _startVoiceSearch,
+                  icon: Icons.camera_alt_outlined,
+                  onTap: _startBarcodeScan,
                 ),
                 const SizedBox(width: 8),
                 _QuickActionIcon(
-                  icon: Icons.qr_code_scanner_rounded,
-                  onTap: _startBarcodeScan,
+                  icon: Icons.mic_none_rounded,
+                  onTap: _startVoiceSearch,
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
-          // ── Banner Carousel ──
+          // ── Categories Carousel ──
+          if (feed.categories.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Categories',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => CategoriesScreen(
+                          appState: widget.appState,
+                          token: widget.token,
+                        ),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'See All',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        SizedBox(width: 3),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 12,
+                          color: AppColors.primary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 95,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: feed.categories.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                itemBuilder: (_, index) {
+                  final cat = feed.categories[index];
+                  return GestureDetector(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ProductListScreen(
+                          appState: widget.appState,
+                          categorySlug: cat.slug,
+                          title: cat.name,
+                          token: widget.token,
+                        ),
+                      ),
+                    ),
+                    child: SizedBox(
+                      width: 72,
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: AppColors.primaryLight,
+                              borderRadius: BorderRadius.circular(15),
+                              border: Border.all(
+                                color: AppColors.primary.withAlpha(35),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary.withAlpha(10),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: cat.imageUrl != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(15),
+                                    child: CachedNetworkImage(
+                                      imageUrl: cat.imageUrl!,
+                                      fit: BoxFit.cover,
+                                      errorWidget: (_, _, _) => const Icon(
+                                        Icons.category_rounded,
+                                        color: AppColors.primary,
+                                        size: 24,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.category_rounded,
+                                    color: AppColors.primary,
+                                    size: 24,
+                                  ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            cat.name,
+                            maxLines: 2,
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          // ── Promotional Banners ──
           if (bannerItems.isNotEmpty) ...[
             SizedBox(
-              height: 180,
+              height: 160,
               child: Stack(
                 children: [
                   PageView.builder(
@@ -623,40 +901,43 @@ class _DashboardViewState extends State<_DashboardView> {
                     itemCount: bannerItems.length,
                     itemBuilder: (_, index) {
                       final banner = bannerItems[index];
-                      return Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(15),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child:
-                              (banner.imageUrl != null &&
-                                  banner.imageUrl!.isNotEmpty)
-                              ? CachedNetworkImage(
-                                  imageUrl: banner.imageUrl!,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (_, _, _) =>
-                                      _bannerPlaceholder(),
-                                )
-                              : _bannerPlaceholder(),
+                      return GestureDetector(
+                        onTap: () => _handleBannerTap(banner),
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(12),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child:
+                                (banner.imageUrl != null &&
+                                    banner.imageUrl!.isNotEmpty)
+                                ? CachedNetworkImage(
+                                    imageUrl: banner.imageUrl!,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, _, _) =>
+                                        _bannerPlaceholder(),
+                                  )
+                                : _bannerPlaceholder(),
+                          ),
                         ),
                       );
                     },
                   ),
                   if (bannerItems.length > 1)
                     Positioned(
-                      bottom: 16,
+                      bottom: 12,
                       left: 0,
                       right: 0,
                       child: Center(
@@ -664,11 +945,11 @@ class _DashboardViewState extends State<_DashboardView> {
                           controller: _bannerController,
                           count: bannerItems.length,
                           effect: const WormEffect(
-                            dotWidth: 7,
-                            dotHeight: 7,
+                            dotWidth: 6,
+                            dotHeight: 6,
                             activeDotColor: Colors.white,
-                            dotColor: Colors.white38,
-                            spacing: 6,
+                            dotColor: Colors.white54,
+                            spacing: 5,
                           ),
                         ),
                       ),
@@ -676,103 +957,67 @@ class _DashboardViewState extends State<_DashboardView> {
                 ],
               ),
             ),
+            const SizedBox(height: 24),
           ],
 
-          const SizedBox(height: 8),
-
-          // ── Welcome Card ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withAlpha(40),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
+          // ── Services Grid ──
+          if (feed.services.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const Text(
+                    'Services',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => ListingListScreen(
+                          appState: widget.appState,
+                          title: 'All Services',
+                          listingType: 'service',
+                        ),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          'Hello, ${user?.name ?? 'Member'} 👋',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
+                          'See All',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Wallet: ₹${(user?.walletBalance ?? 0).toStringAsFixed(2)}',
-                          style: TextStyle(
-                            color: Colors.white.withAlpha(200),
-                            fontSize: 14,
-                          ),
+                        SizedBox(width: 3),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 12,
+                          color: AppColors.primary,
                         ),
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(50),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      user?.referralCode ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 13,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // ── Services ──
-          if (feed.services.isNotEmpty) ...[
-            SectionHeader(
-              title: 'Services',
-              actionLabel: 'See All',
-              onAction: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => ListingListScreen(
-                    appState: widget.appState,
-                    title: 'All Services',
-                    listingType: 'service',
-                  ),
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 4,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.85,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 10,
+                childAspectRatio: 0.75,
               ),
               itemCount: feed.services.length,
               itemBuilder: (_, index) {
@@ -789,31 +1034,39 @@ class _DashboardViewState extends State<_DashboardView> {
                   child: Column(
                     children: [
                       Container(
-                        width: 60,
-                        height: 60,
+                        width: 64,
+                        height: 64,
                         decoration: BoxDecoration(
                           color: AppColors.primaryLight,
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(13),
                           border: Border.all(
                             color: AppColors.primary.withAlpha(30),
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withAlpha(8),
+                              blurRadius: 6,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
                         ),
                         child: service.iconUrl != null
                             ? ClipRRect(
-                                borderRadius: BorderRadius.circular(14),
+                                borderRadius: BorderRadius.circular(13),
                                 child: CachedNetworkImage(
                                   imageUrl: service.iconUrl!,
                                   fit: BoxFit.cover,
                                   errorWidget: (_, _, _) => const Icon(
                                     Icons.miscellaneous_services_rounded,
                                     color: AppColors.primary,
+                                    size: 22,
                                   ),
                                 ),
                               )
                             : const Icon(
                                 Icons.miscellaneous_services_rounded,
                                 color: AppColors.primary,
-                                size: 24,
+                                size: 22,
                               ),
                       ),
                       const SizedBox(height: 6),
@@ -823,7 +1076,7 @@ class _DashboardViewState extends State<_DashboardView> {
                         textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
-                          fontSize: 10,
+                          fontSize: 9,
                           fontWeight: FontWeight.w600,
                           color: AppColors.textPrimary,
                         ),
@@ -836,239 +1089,74 @@ class _DashboardViewState extends State<_DashboardView> {
             const SizedBox(height: 24),
           ],
 
+          // ── Welcome Card ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _HomeNavTile(
-                    icon: Icons.store_outlined,
-                    title: 'Stores',
-                    color: const Color(0xFF22C55E),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => ListingListScreen(
-                          appState: widget.appState,
-                          title: 'All Stores',
-                          listingType: 'store',
-                        ),
-                      ),
-                    ),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withAlpha(25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _HomeNavTile(
-                    icon: Icons.storefront_outlined,
-                    title: 'Vendors',
-                    color: const Color(0xFF0EA5E9),
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => ListingListScreen(
-                          appState: widget.appState,
-                          title: 'All Vendors',
-                          listingType: 'vendor',
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _HomeNavTile(
-                    icon: Icons.apps_outlined,
-                    title: 'All',
-                    color: AppColors.primary,
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) =>
-                            ListingListScreen(appState: widget.appState),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // ── Referral Card ──
-          if (feed.referralCard != null) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary.withAlpha(220),
-                      AppColors.primary,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withAlpha(40),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              feed.referralCard!.text,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Code: ${feed.referralCard!.referralCode}',
-                              style: TextStyle(
-                                color: Colors.white.withAlpha(200),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          'Hello, ${user?.name ?? 'Member'} 👋',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withAlpha(50),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'Refer Now',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 12,
-                            ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Wallet: ₹${(user?.walletBalance ?? 0).toStringAsFixed(2)}',
+                          style: TextStyle(
+                            color: Colors.white.withAlpha(190),
+                            fontSize: 12,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: 0.6,
-                        minHeight: 6,
-                        backgroundColor: Colors.white.withAlpha(100),
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white.withAlpha(200),
-                        ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withAlpha(45),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Text(
+                      user?.referralCode ?? 'N/A',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                        letterSpacing: 0.3,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 24),
-          ],
+          ),
 
           const SizedBox(height: 24),
-
-          // ── Categories ──
-          if (feed.categories.isNotEmpty) ...[
-            SectionHeader(
-              title: 'Shop by Category',
-              actionLabel: 'See All',
-              onAction: () {},
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              height: 100,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: feed.categories.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 14),
-                itemBuilder: (_, index) {
-                  final cat = feed.categories[index];
-                  return GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => ProductListScreen(
-                          appState: widget.appState,
-                          categorySlug: cat.slug,
-                          title: cat.name,
-                          token: widget.token,
-                        ),
-                      ),
-                    ),
-                    child: SizedBox(
-                      width: 76,
-                      child: Column(
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 60,
-                            decoration: BoxDecoration(
-                              color: AppColors.primaryLight,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(
-                                color: AppColors.primary.withAlpha(30),
-                              ),
-                            ),
-                            child: cat.imageUrl != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(18),
-                                    child: CachedNetworkImage(
-                                      imageUrl: cat.imageUrl!,
-                                      fit: BoxFit.cover,
-                                      errorWidget: (_, _, _) => const Icon(
-                                        Icons.category_rounded,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.category_rounded,
-                                    color: AppColors.primary,
-                                    size: 26,
-                                  ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            cat.name,
-                            maxLines: 2,
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
 
           // ── Featured Products ──
           if (feed.featuredProducts.isNotEmpty) ...[
@@ -1086,7 +1174,7 @@ class _DashboardViewState extends State<_DashboardView> {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             SizedBox(
               height: 220,
               child: ListView.separated(
@@ -1112,7 +1200,7 @@ class _DashboardViewState extends State<_DashboardView> {
               title: 'Recommended 🌟',
               padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             SizedBox(
               height: 220,
               child: ListView.separated(
@@ -1138,7 +1226,7 @@ class _DashboardViewState extends State<_DashboardView> {
               title: 'New Launches 🎉',
               padding: const EdgeInsets.symmetric(horizontal: 16),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             SizedBox(
               height: 220,
               child: ListView.separated(
@@ -1157,173 +1245,6 @@ class _DashboardViewState extends State<_DashboardView> {
             ),
             const SizedBox(height: 24),
           ],
-
-          if (bannerItems.isNotEmpty) ...[
-            SectionHeader(
-              title: 'Recommended Benefits',
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 220,
-              child: Stack(
-                children: [
-                  PageView.builder(
-                    controller: _promoController,
-                    itemCount: bannerItems.length,
-                    itemBuilder: (_, index) {
-                      final banner = bannerItems[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(18),
-                          child: Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              (banner.imageUrl != null &&
-                                      banner.imageUrl!.isNotEmpty)
-                                  ? CachedNetworkImage(
-                                      imageUrl: banner.imageUrl!,
-                                      fit: BoxFit.cover,
-                                      errorWidget: (_, _, _) =>
-                                          _bannerPlaceholder(),
-                                    )
-                                  : _bannerPlaceholder(),
-                              Positioned(
-                                left: 0,
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.fromLTRB(
-                                    14,
-                                    28,
-                                    14,
-                                    14,
-                                  ),
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.transparent,
-                                        Colors.black87,
-                                      ],
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if ((banner.title ?? '')
-                                          .trim()
-                                          .isNotEmpty)
-                                        Text(
-                                          banner.title!,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: Colors.white70,
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      if ((banner.subtitle ?? '')
-                                          .trim()
-                                          .isNotEmpty) ...[
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          banner.subtitle!,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  if (bannerItems.length > 1)
-                    Positioned(
-                      bottom: 12,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: SmoothPageIndicator(
-                          controller: _promoController,
-                          count: bannerItems.length,
-                          effect: const WormEffect(
-                            dotWidth: 7,
-                            dotHeight: 7,
-                            activeDotColor: Colors.white,
-                            dotColor: Colors.white38,
-                            spacing: 6,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.borderLight),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.group_add_outlined, color: AppColors.primary),
-                      SizedBox(width: 8),
-                      Text(
-                        'Invite People & Earn',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Referral Code: ${user?.referralCode ?? 'Not available'}',
-                    style: const TextStyle(color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'Account Level',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _AccountLevelProgress(
-                    currentLevel: _currentLevel(_referralData),
-                  ),
-                ],
-              ),
-            ),
-          ),
 
           const SizedBox(height: 20),
         ],
@@ -1696,50 +1617,6 @@ class _FeaturedProductCard extends StatelessWidget {
   );
 }
 
-class _HomeNavTile extends StatelessWidget {
-  const _HomeNavTile({
-    required this.icon,
-    required this.title,
-    required this.color,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Ink(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: color.withAlpha(18),
-          border: Border.all(color: color.withAlpha(60)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(height: 6),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _QuickActionIcon extends StatelessWidget {
   const _QuickActionIcon({required this.icon, required this.onTap});
 
@@ -1761,71 +1638,6 @@ class _QuickActionIcon extends StatelessWidget {
         ),
         child: Icon(icon, color: AppColors.textPrimary, size: 20),
       ),
-    );
-  }
-}
-
-class _AccountLevelProgress extends StatelessWidget {
-  const _AccountLevelProgress({required this.currentLevel});
-
-  final int currentLevel;
-
-  @override
-  Widget build(BuildContext context) {
-    final normalizedLevel = currentLevel.clamp(1, 5);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (var level = 1; level <= 5; level++) ...[
-          _AccountLevelRow(
-            label: 'Level $level',
-            active: level <= normalizedLevel,
-          ),
-          if (level < 5) const SizedBox(height: 6),
-        ],
-      ],
-    );
-  }
-}
-
-int _currentLevel(ReferralResponse? referralData) {
-  final levels = referralData?.levelSummary ?? const <LevelSummary>[];
-  var currentLevel = 1;
-
-  for (final level in levels) {
-    if (level.members > 0 && level.depth > currentLevel) {
-      currentLevel = level.depth;
-    }
-  }
-
-  return currentLevel.clamp(1, 5);
-}
-
-class _AccountLevelRow extends StatelessWidget {
-  const _AccountLevelRow({required this.label, required this.active});
-
-  final String label;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(
-          active ? Icons.check_circle_rounded : Icons.radio_button_unchecked,
-          size: 16,
-          color: active ? AppColors.success : AppColors.textMuted,
-        ),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: active ? AppColors.textPrimary : AppColors.textSecondary,
-            fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-          ),
-        ),
-      ],
     );
   }
 }

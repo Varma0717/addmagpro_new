@@ -40,17 +40,16 @@ class ApiClient {
     });
     request.fields.addAll(fields);
     for (final entry in filePaths.entries) {
-      request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value));
+      request.files.add(
+        await http.MultipartFile.fromPath(entry.key, entry.value),
+      );
     }
     final streamed = await request.send();
     final response = await http.Response.fromStream(streamed);
     return _decode(response);
   }
 
-  Future<Map<String, dynamic>> get(
-    String path, {
-    String? bearerToken,
-  }) async {
+  Future<Map<String, dynamic>> get(String path, {String? bearerToken}) async {
     final response = await _http.get(
       _uri(path),
       headers: _headers(bearerToken),
@@ -97,24 +96,47 @@ class ApiClient {
   }
 
   Map<String, dynamic> _decode(http.Response response) {
-    final Map<String, dynamic> payload =
-        jsonDecode(response.body) as Map<String, dynamic>;
-
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return payload;
-    }
-
-    final dynamic errors = payload['errors'];
-    if (errors is Map<String, dynamic> && errors.isNotEmpty) {
-      final first = errors.values.first;
-      if (first is List && first.isNotEmpty) {
-        throw ApiException(first.first.toString(), statusCode: response.statusCode);
-      }
-    }
-
-    throw ApiException(
-      (payload['message'] as String?) ?? 'Request failed',
-      statusCode: response.statusCode,
+    print('📡 Response Status: ${response.statusCode}');
+    print(
+      '📡 Response Body: ${response.body.substring(0, response.body.length > 500 ? 500 : response.body.length)}',
     );
+
+    try {
+      final Map<String, dynamic> payload =
+          jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return payload;
+      }
+
+      final dynamic errors = payload['errors'];
+      if (errors is Map<String, dynamic> && errors.isNotEmpty) {
+        final first = errors.values.first;
+        if (first is List && first.isNotEmpty) {
+          throw ApiException(
+            first.first.toString(),
+            statusCode: response.statusCode,
+          );
+        }
+      }
+
+      throw ApiException(
+        (payload['message'] as String?) ?? 'Request failed',
+        statusCode: response.statusCode,
+      );
+    } on FormatException catch (e) {
+      print('❌ JSON Parse Error: $e');
+      print('❌ Response might be HTML: ${response.body.substring(0, 200)}');
+      throw ApiException(
+        'Server returned invalid response. Status: ${response.statusCode}. Check if API endpoint exists.',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      if (e is ApiException) rethrow;
+      throw ApiException(
+        'Network error: ${e.toString()}',
+        statusCode: response.statusCode,
+      );
+    }
   }
 }
